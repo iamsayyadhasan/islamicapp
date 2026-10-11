@@ -1,20 +1,20 @@
 import { HomeDashboardData } from '../types/home.types';
+import {
+  SHARED_PRAYER_SCHEDULE,
+  SHARED_PRAYER_TIMES_DATA,
+  deriveNextPrayerFromSchedule,
+} from '../../prayer-times/data/prayer-times.mock';
+
+const initialDerived = deriveNextPrayerFromSchedule(SHARED_PRAYER_SCHEDULE);
 
 export const MOCK_HOME_DASHBOARD: HomeDashboardData = {
   userName: 'Hasan',
   greeting: 'Assalamu Alaikum',
-  location: 'Badaun, India',
+  location: SHARED_PRAYER_TIMES_DATA.location,
   nextPrayer: {
-    name: 'Asr',
-    countdown: '01:24:35',
-    dateLabel: 'May 13, 2025 / 15 Dhul-Qadah 1446',
+    name: initialDerived.nextPrayerName,
+    countdown: initialDerived.countdownString,
+    dateLabel: `${SHARED_PRAYER_TIMES_DATA.gregorianDate} / ${SHARED_PRAYER_TIMES_DATA.hijriDate}`,
   },
-  prayers: [
-    { id: 'fajr', name: 'Fajr', time: '4:32 AM', isActive: false },
-    { id: 'sunrise', name: 'Sunrise', time: '6:01 AM', isActive: false },
-    { id: 'dhuhr', name: 'Dhuhr', time: '12:32 PM', isActive: false },
-    { id: 'asr', name: 'Asr', time: '4:58 PM', isActive: true },
-    { id: 'maghrib', name: 'Maghrib', time: '7:10 PM', isActive: false },
-    { id: 'isha', name: 'Isha', time: '8:30 PM', isActive: false },
-  ],
+  prayers: initialDerived.prayersWithActiveState,
 };

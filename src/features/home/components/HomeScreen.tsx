@@ -6,6 +6,10 @@ import { StatusBar } from 'expo-status-bar';
 import Svg, { Circle, Path, Polygon, Polyline } from 'react-native-svg';
 import { IslamicPatternOverlay } from '@/components/illustrations';
 import { ThemedText } from '@/components/typography/ThemedText';
+import {
+  deriveNextPrayerFromSchedule,
+  getCurrentDaySeconds,
+} from '@/features/prayer-times/data/prayer-times.mock';
 import { MOCK_HOME_DASHBOARD } from '../data/home.mock';
 
 export function HomeScreen() {
@@ -13,21 +17,16 @@ export function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { userName, greeting, location, nextPrayer, prayers } = MOCK_HOME_DASHBOARD;
 
-  const [countdown, setCountdown] = useState({ h: 1, m: 24, s: 35 });
+  const [prayerState, setPrayerState] = useState(() =>
+    deriveNextPrayerFromSchedule(prayers, getCurrentDaySeconds()),
+  );
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev.s > 0) return { ...prev, s: prev.s - 1 };
-        if (prev.m > 0) return { ...prev, m: 59, s: 59 };
-        if (prev.h > 0) return { h: prev.h - 1, m: 59, s: 59 };
-        return { h: 1, m: 24, s: 35 };
-      });
+      setPrayerState(deriveNextPrayerFromSchedule(prayers, getCurrentDaySeconds()));
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
-
-  const format2 = (n: number) => String(n).padStart(2, '0');
+  }, [prayers]);
 
   const handleOpenQibla = () => {
     router.push('/(tabs)/qibla' as Href);
@@ -131,12 +130,10 @@ export function HomeScreen() {
         >
           <ThemedText style={styles.nextPrayerLabel}>NEXT PRAYER</ThemedText>
           <ThemedText style={styles.prayerNameTitle} weight="bold">
-            {nextPrayer.name}
+            {prayerState.nextPrayerName}
           </ThemedText>
 
-          <ThemedText style={styles.countdownValue}>
-            {format2(countdown.h)}:{format2(countdown.m)}:{format2(countdown.s)}
-          </ThemedText>
+          <ThemedText style={styles.countdownValue}>{prayerState.countdownString}</ThemedText>
 
           <ThemedText style={styles.remainingText}>remaining</ThemedText>
           <ThemedText style={styles.dateHijriText}>{nextPrayer.dateLabel}</ThemedText>
@@ -149,28 +146,52 @@ export function HomeScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.timetableScroll}
         >
-          {prayers.map((item) => {
-            const isAsr = item.isActive;
+          {/* Section Header */}
+          <View style={styles.sheetHeader}>
+            <View style={styles.sheetTitleGroup}>
+              <ThemedText style={styles.sheetTitle} weight="bold">
+                Today&apos;s Prayers
+              </ThemedText>
+              <View style={styles.sampleBadge}>
+                <ThemedText style={styles.sampleBadgeText} weight="medium">
+                  Sample
+                </ThemedText>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              onPress={handleOpenPrayerTimes}
+              activeOpacity={0.7}
+              style={styles.viewScheduleButton}
+              accessibilityRole="button"
+              accessibilityLabel="View full prayer times schedule"
+            >
+              <ThemedText style={styles.viewScheduleText} weight="bold">
+                Full Schedule ›
+              </ThemedText>
+            </TouchableOpacity>
+          </View>
+
+          {prayerState.prayersWithActiveState.map((item) => {
+            const isActive = item.isActive;
             return (
-              <TouchableOpacity
+              <View
                 key={item.id}
-                style={[styles.timetableRow, isAsr && styles.timetableRowActive]}
-                onPress={handleOpenPrayerTimes}
-                activeOpacity={0.7}
+                style={[styles.timetableRow, isActive && styles.timetableRowActive]}
               >
                 <ThemedText
-                  style={[styles.prayerName, isAsr && styles.prayerTextActive]}
-                  weight={isAsr ? 'bold' : 'medium'}
+                  style={[styles.prayerName, isActive && styles.prayerTextActive]}
+                  weight={isActive ? 'bold' : 'medium'}
                 >
                   {item.name}
                 </ThemedText>
                 <ThemedText
-                  style={[styles.prayerTime, isAsr && styles.prayerTextActive]}
-                  weight={isAsr ? 'bold' : 'medium'}
+                  style={[styles.prayerTime, isActive && styles.prayerTextActive]}
+                  weight={isActive ? 'bold' : 'medium'}
                 >
                   {item.time}
                 </ThemedText>
-              </TouchableOpacity>
+              </View>
             );
           })}
 
@@ -371,8 +392,46 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   timetableScroll: {
-    paddingVertical: 4,
+    paddingTop: 4,
+    paddingBottom: 40,
     gap: 4,
+  },
+  sheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 4,
+    marginBottom: 6,
+  },
+  sheetTitleGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  sheetTitle: {
+    fontSize: 14,
+    lineHeight: 18,
+    color: '#0A3B2A',
+  },
+  sampleBadge: {
+    backgroundColor: '#E2E8F0',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  sampleBadgeText: {
+    fontSize: 10,
+    lineHeight: 13,
+    color: '#475569',
+  },
+  viewScheduleButton: {
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+  },
+  viewScheduleText: {
+    fontSize: 12,
+    lineHeight: 16,
+    color: '#0A3B2A',
   },
   timetableRow: {
     flexDirection: 'row',

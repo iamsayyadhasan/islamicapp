@@ -200,6 +200,14 @@ export function PrayerTimesScreen() {
           }
           style={{ marginTop: 6 }}
         />
+
+        {/* Sample Timetable Footnote */}
+        <View style={styles.disclaimerContainer}>
+          <ThemedText style={styles.disclaimerText}>
+            * Sample prayer times for demonstration. Authoritative times depend on local mosque
+            timetable.
+          </ThemedText>
+        </View>
       </ScrollView>
     </ScreenContainer>
   );
@@ -213,7 +221,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 8,
-    paddingBottom: 24,
+    paddingBottom: 80,
     gap: 16,
   },
   headerBar: {
@@ -364,5 +372,16 @@ const styles = StyleSheet.create({
   monthlyButtonText: {
     color: '#FFFFFF',
     fontSize: 12,
+  },
+  disclaimerContainer: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    alignItems: 'center',
+  },
+  disclaimerText: {
+    fontSize: 10,
+    lineHeight: 14,
+    color: '#94A3B8',
+    textAlign: 'center',
   },
 });

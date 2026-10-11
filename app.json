@@ -33,6 +33,12 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Islamic Companion to access your location to calculate the precise direction of the Qibla and local prayer times."
+        }
       ]
     ],
     "experiments": {

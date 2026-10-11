@@ -5,6 +5,7 @@ import Svg, { Circle, Path, Polyline } from 'react-native-svg';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ThemedText } from '@/components/typography/ThemedText';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
+import * as Location from 'expo-location';
 import { MOCK_PERMISSIONS } from '../data/onboarding.mock';
 import { PermissionItem } from '../types/onboarding.types';
 
@@ -69,14 +70,73 @@ export function PermissionsScreen() {
     storage: true,
   });
 
-  const handleToggle = (id: string) => {
-    setPermissionsState((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
+  const handleToggle = async (id: string) => {
+    if (id === 'location') {
+      const willEnable = !permissionsState.location;
+      if (willEnable) {
+        try {
+          const res = await Location.requestForegroundPermissionsAsync();
+          if (__DEV__) {
+            console.log('[Onboarding Permission Request]', {
+              status: res.status,
+              granted: res.granted,
+              canAskAgain: res.canAskAgain,
+            });
+          }
+
+          if (res.status === Location.PermissionStatus.GRANTED) {
+            setPermissionsState((prev) => ({ ...prev, location: true }));
+            // Asynchronously warm up location fix in background without blocking UI
+            void Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
+              .catch(() => Location.getLastKnownPositionAsync())
+              .catch(() => null);
+          } else {
+            setPermissionsState((prev) => ({ ...prev, location: false }));
+          }
+        } catch (err) {
+          if (__DEV__) {
+            console.warn('[Onboarding Location Error]', err);
+          }
+          setPermissionsState((prev) => ({ ...prev, location: false }));
+        }
+      } else {
+        setPermissionsState((prev) => ({ ...prev, location: false }));
+      }
+    } else {
+      setPermissionsState((prev) => ({
+        ...prev,
+        [id]: !prev[id],
+      }));
+    }
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
+    if (permissionsState.location) {
+      try {
+        const check = await Location.getForegroundPermissionsAsync();
+        if (check.status !== Location.PermissionStatus.GRANTED && check.canAskAgain) {
+          const req = await Location.requestForegroundPermissionsAsync();
+          if (__DEV__) {
+            console.log('[Onboarding Complete Permission]', {
+              status: req.status,
+              granted: req.granted,
+              canAskAgain: req.canAskAgain,
+            });
+          }
+          if (req.status === Location.PermissionStatus.GRANTED) {
+            void Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
+              .catch(() => Location.getLastKnownPositionAsync())
+              .catch(() => null);
+          }
+        }
+      } catch (err) {
+        if (__DEV__) {
+          console.warn('[Onboarding Complete Location Check Failed]', err);
+        }
+      }
+    }
+
+    // Always continue onboarding without blocking the user
     router.replace('/(tabs)' as Href);
   };
 

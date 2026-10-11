@@ -2,10 +2,15 @@ import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { ThemedText } from '@/components/typography/ThemedText';
-import { QiblaScreenMock } from '../data/qibla.mock';
+
+export interface QiblaInfoCardData {
+  locationLabel?: string;
+  cityName: string;
+  coordinates: string;
+}
 
 export interface QiblaInfoCardProps {
-  data: QiblaScreenMock;
+  data: QiblaInfoCardData;
   onRefresh?: () => void;
 }
 
@@ -23,7 +28,13 @@ export function QiblaInfoCard({ data, onRefresh }: QiblaInfoCardProps) {
       </View>
 
       {/* Right Circular Refresh Button */}
-      <TouchableOpacity style={styles.refreshButton} onPress={onRefresh} activeOpacity={0.7}>
+      <TouchableOpacity
+        style={styles.refreshButton}
+        onPress={onRefresh}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="Refresh current location and compass"
+      >
         <Svg
           width={16}
           height={16}

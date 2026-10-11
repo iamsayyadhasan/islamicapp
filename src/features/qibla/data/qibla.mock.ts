@@ -7,9 +7,9 @@ export interface QiblaScreenMock {
 }
 
 export const MOCK_QIBLA_SCREEN: QiblaScreenMock = {
-  angle: '293°',
-  direction: 'North West',
-  locationLabel: 'Your Location',
+  angle: '267°',
+  direction: 'West',
+  locationLabel: 'Sample Location',
   cityName: 'New Delhi, India',
   coordinates: '28.6139° N, 77.2090° E',
 };

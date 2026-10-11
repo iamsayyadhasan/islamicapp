@@ -8,11 +8,11 @@ export interface CompassDialProps {
   isAligned?: boolean;
 }
 
-export function CompassDial({ heading = 293 }: CompassDialProps) {
+export function CompassDial({ heading = 293, isAligned = false }: CompassDialProps) {
   return (
     <View style={styles.outerContainer}>
       {/* Outer Bezel */}
-      <View style={styles.bezel}>
+      <View style={[styles.bezel, isAligned && styles.bezelAligned]}>
         {/* Soft Parchment Inner Dial */}
         <View style={styles.innerDial}>
           {/* 360-degree Tick Marks */}
@@ -97,6 +97,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 18,
     elevation: 4,
+  },
+  bezelAligned: {
+    borderColor: '#D4AF37', // Gold ring when aligned with Kaaba
+    shadowColor: '#0A3B2A',
+    shadowOpacity: 0.35,
+    shadowRadius: 24,
+    elevation: 8,
   },
   innerDial: {
     width: DIAL_SIZE - 20,

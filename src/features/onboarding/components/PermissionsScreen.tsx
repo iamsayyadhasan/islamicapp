@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Href, useRouter } from 'expo-router';
 import Svg, { Circle, Path, Polyline } from 'react-native-svg';
@@ -67,10 +67,28 @@ export function PermissionsScreen() {
   const { refreshLocation } = useLocation();
 
   const [permissionsState, setPermissionsState] = useState<Record<string, boolean>>({
-    location: true,
+    location: false,
     notifications: true,
     storage: true,
   });
+
+  useEffect(() => {
+    let isMounted = true;
+    Location.getForegroundPermissionsAsync()
+      .then((res) => {
+        if (isMounted) {
+          setPermissionsState((prev) => ({
+            ...prev,
+            location: res.status === Location.PermissionStatus.GRANTED,
+          }));
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleToggle = async (id: string) => {
     if (id === 'location') {

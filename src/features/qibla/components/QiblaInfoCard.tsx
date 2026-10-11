@@ -72,6 +72,8 @@ const styles = StyleSheet.create({
   },
   locationGroup: {
     gap: 2,
+    flex: 1,
+    marginRight: 10,
   },
   locationLabel: {
     fontSize: 10,

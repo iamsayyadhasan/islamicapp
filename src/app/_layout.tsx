@@ -9,6 +9,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useColorScheme } from 'react-native';
 
 import { ThemeProvider as AppThemeProvider } from '@/theme';
+import { LocationProvider } from '@/context/LocationContext';
 
 // Prevent the native splash screen from auto-hiding until React root layout is mounted
 SplashScreen.preventAutoHideAsync();
@@ -25,18 +26,20 @@ export default function RootLayout() {
 
   return (
     <AppThemeProvider>
-      <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="onboarding/step-1" options={{ headerShown: false }} />
-          <Stack.Screen name="onboarding/step-2" options={{ headerShown: false }} />
-          <Stack.Screen name="language" options={{ headerShown: false }} />
-          <Stack.Screen name="permissions" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="qibla" options={{ headerShown: false }} />
-          <Stack.Screen name="tasbeeh" options={{ headerShown: false }} />
-        </Stack>
-      </NavigationThemeProvider>
+      <LocationProvider>
+        <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="onboarding/step-1" options={{ headerShown: false }} />
+            <Stack.Screen name="onboarding/step-2" options={{ headerShown: false }} />
+            <Stack.Screen name="language" options={{ headerShown: false }} />
+            <Stack.Screen name="permissions" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="qibla" options={{ headerShown: false }} />
+            <Stack.Screen name="tasbeeh" options={{ headerShown: false }} />
+          </Stack>
+        </NavigationThemeProvider>
+      </LocationProvider>
     </AppThemeProvider>
   );
 }

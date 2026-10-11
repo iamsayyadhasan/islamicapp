@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import Svg, { Circle, Path, Polygon, Polyline } from 'react-native-svg';
 import { IslamicPatternOverlay } from '@/components/illustrations';
 import { ThemedText } from '@/components/typography/ThemedText';
+import { useLocation } from '@/context/LocationContext';
 import {
   deriveNextPrayerFromSchedule,
   getCurrentDaySeconds,
@@ -15,7 +16,24 @@ import { MOCK_HOME_DASHBOARD } from '../data/home.mock';
 export function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { userName, greeting, location, nextPrayer, prayers } = MOCK_HOME_DASHBOARD;
+  const {
+    userName,
+    greeting,
+    location: defaultLocation,
+    nextPrayer,
+    prayers,
+  } = MOCK_HOME_DASHBOARD;
+  const {
+    locationLabel: sharedLocationLabel,
+    isLiveLocation,
+    status: locationStatus,
+  } = useLocation();
+
+  const displayLocation = isLiveLocation
+    ? sharedLocationLabel
+    : locationStatus === 'locating'
+      ? 'Locating...'
+      : defaultLocation;
 
   const [prayerState, setPrayerState] = useState(() =>
     deriveNextPrayerFromSchedule(prayers, getCurrentDaySeconds()),
@@ -76,7 +94,9 @@ export function HomeScreen() {
                   <Path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                   <Circle cx={12} cy={10} r={3} />
                 </Svg>
-                <ThemedText style={styles.locationText}>{location}</ThemedText>
+                <ThemedText style={styles.locationText} numberOfLines={1}>
+                  {displayLocation}
+                </ThemedText>
               </View>
             </View>
           </View>
@@ -276,6 +296,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    flex: 1,
+    marginRight: 10,
   },
   avatarCircle: {
     width: 40,
@@ -293,6 +315,7 @@ const styles = StyleSheet.create({
   },
   userInfo: {
     gap: 1,
+    flex: 1,
   },
   greetingText: {
     fontSize: 11,

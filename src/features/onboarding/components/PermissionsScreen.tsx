@@ -6,6 +6,7 @@ import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ThemedText } from '@/components/typography/ThemedText';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import * as Location from 'expo-location';
+import { useLocation } from '@/context/LocationContext';
 import { MOCK_PERMISSIONS } from '../data/onboarding.mock';
 import { PermissionItem } from '../types/onboarding.types';
 
@@ -63,6 +64,7 @@ function renderPermIcon(type: PermissionItem['icon']) {
 
 export function PermissionsScreen() {
   const router = useRouter();
+  const { refreshLocation } = useLocation();
 
   const [permissionsState, setPermissionsState] = useState<Record<string, boolean>>({
     location: true,
@@ -86,10 +88,7 @@ export function PermissionsScreen() {
 
           if (res.status === Location.PermissionStatus.GRANTED) {
             setPermissionsState((prev) => ({ ...prev, location: true }));
-            // Asynchronously warm up location fix in background without blocking UI
-            void Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
-              .catch(() => Location.getLastKnownPositionAsync())
-              .catch(() => null);
+            void refreshLocation();
           } else {
             setPermissionsState((prev) => ({ ...prev, location: false }));
           }
@@ -124,9 +123,7 @@ export function PermissionsScreen() {
             });
           }
           if (req.status === Location.PermissionStatus.GRANTED) {
-            void Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
-              .catch(() => Location.getLastKnownPositionAsync())
-              .catch(() => null);
+            void refreshLocation();
           }
         }
       } catch (err) {

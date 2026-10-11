@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Href, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import Svg, { Circle, Path, Polygon } from 'react-native-svg';
+import Svg, { Circle, Path, Polygon, Polyline } from 'react-native-svg';
 import { IslamicPatternOverlay } from '@/components/illustrations';
 import { ThemedText } from '@/components/typography/ThemedText';
 import { MOCK_HOME_DASHBOARD } from '../data/home.mock';
@@ -35,6 +35,10 @@ export function HomeScreen() {
 
   const handleOpenPrayerTimes = () => {
     router.push('/(tabs)/prayer' as Href);
+  };
+
+  const handleOpenTasbeeh = () => {
+    router.push('/tasbeeh' as Href);
   };
 
   return (
@@ -169,6 +173,61 @@ export function HomeScreen() {
               </TouchableOpacity>
             );
           })}
+
+          {/* Tasbeeh Quick-Access Shortcut Card */}
+          <TouchableOpacity
+            style={styles.tasbeehCard}
+            onPress={handleOpenTasbeeh}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel="Tasbeeh: Take a moment for dhikr. Start Tasbeeh."
+          >
+            {/* Tasbeeh Beads Icon Badge */}
+            <View style={styles.tasbeehIconBadge}>
+              <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
+                <Circle cx={12} cy={5.5} r={2.2} fill="#FBE19A" />
+                <Circle cx={17} cy={8} r={2.2} fill="#FBE19A" />
+                <Circle cx={18.5} cy={13} r={2.2} fill="#FBE19A" />
+                <Circle cx={15.5} cy={17.5} r={2.2} fill="#FBE19A" />
+                <Circle cx={8.5} cy={17.5} r={2.2} fill="#FBE19A" />
+                <Circle cx={5.5} cy={13} r={2.2} fill="#FBE19A" />
+                <Circle cx={7} cy={8} r={2.2} fill="#FBE19A" />
+                <Path
+                  d="M12 2.5v2M12 18v3.5"
+                  stroke="#FBE19A"
+                  strokeWidth={1.8}
+                  strokeLinecap="round"
+                />
+              </Svg>
+            </View>
+
+            {/* Title & Subtitle */}
+            <View style={styles.tasbeehTextGroup}>
+              <ThemedText style={styles.tasbeehTitle} weight="bold">
+                Tasbeeh
+              </ThemedText>
+              <ThemedText style={styles.tasbeehSubtitle}>Take a moment for dhikr</ThemedText>
+            </View>
+
+            {/* Clear "Start Tasbeeh" Affordance */}
+            <View style={styles.tasbeehActionPill}>
+              <ThemedText style={styles.tasbeehActionText} weight="bold">
+                Start Tasbeeh
+              </ThemedText>
+              <Svg
+                width={12}
+                height={12}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#FFFFFF"
+                strokeWidth={2.6}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <Polyline points="9 18 15 12 9 6" />
+              </Svg>
+            </View>
+          </TouchableOpacity>
         </ScrollView>
       </View>
     </View>
@@ -338,5 +397,66 @@ const styles = StyleSheet.create({
   prayerTextActive: {
     color: '#0A3B2A',
     fontWeight: '700',
+  },
+  tasbeehCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(10, 59, 42, 0.08)',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginTop: 10,
+    marginBottom: 12,
+    minHeight: 56, // Accessible touch target > 44 pt
+    shadowColor: '#0A3B2A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+    gap: 12,
+  },
+  tasbeehIconBadge: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#0A3B2A',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(251, 225, 154, 0.5)',
+    flexShrink: 0,
+  },
+  tasbeehTextGroup: {
+    flex: 1,
+    gap: 2,
+  },
+  tasbeehTitle: {
+    fontSize: 15,
+    lineHeight: 19,
+    color: '#0A3B2A',
+    letterSpacing: 0.2,
+  },
+  tasbeehSubtitle: {
+    fontSize: 11,
+    lineHeight: 15,
+    color: '#64748B',
+  },
+  tasbeehActionPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0A3B2A',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    gap: 4,
+    flexShrink: 0,
+  },
+  tasbeehActionText: {
+    fontSize: 11,
+    lineHeight: 14,
+    color: '#FFFFFF',
+    letterSpacing: 0.2,
   },
 });

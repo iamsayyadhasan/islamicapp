@@ -34,6 +34,7 @@ export default function RootLayout() {
           <Stack.Screen name="permissions" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="qibla" options={{ headerShown: false }} />
+          <Stack.Screen name="tasbeeh" options={{ headerShown: false }} />
         </Stack>
       </NavigationThemeProvider>
     </AppThemeProvider>

@@ -3,100 +3,18 @@ import { AppState, Linking } from 'react-native';
 import * as Location from 'expo-location';
 import { formatLocationAddress } from '@/utils/location-formatter';
 import { formatCoordinates } from '@/features/qibla/utils/qibla-geometry';
+import { logLocationDevBoundary } from '@/utils/location-dev-logger';
+import type {
+  LocationCoords,
+  SharedLocationContextValue,
+  SharedLocationStatus,
+} from '@/types/location.types';
 
-export type SharedLocationStatus =
-  | 'idle'
-  | 'locating'
-  | 'ready'
-  | 'permission_denied'
-  | 'location_unavailable'
-  | 'services_disabled';
-
-export interface LocationCoords {
-  latitude: number;
-  longitude: number;
-}
-
-export interface SharedLocationContextValue {
-  status: SharedLocationStatus;
-  coords: LocationCoords | null;
-  accuracy: number | null;
-  locationLabel: string;
-  isLiveLocation: boolean;
-  canAskAgain: boolean;
-  statusMessage: string | null;
-  rawAddress: Location.LocationGeocodedAddress | null;
-  refreshLocation: () => Promise<void>;
-  requestPermission: () => Promise<void>;
-  openSettings: () => Promise<void>;
-}
+export type { LocationCoords, SharedLocationContextValue, SharedLocationStatus };
 
 const DEFAULT_SAMPLE_LOCATION = 'Badaun, India (Sample)';
 
 const LocationContext = createContext<SharedLocationContextValue | undefined>(undefined);
-
-/**
- * Development-only structured logger for location boundaries.
- * Coordinates are intentionally redacted to preserve user privacy.
- * Stripped completely from production builds.
- */
-function logLocationDevBoundary(info: {
-  permissionStatus: string;
-  canAskAgain: boolean;
-  fixSource: 'current' | 'last_known' | 'fallback_denied' | 'fallback_error';
-  coords?: {
-    latitude: number;
-    longitude: number;
-    accuracy: number | null;
-  };
-  timestamp?: number;
-  formattedLocation?: string | null;
-  rawAddress?: Location.LocationGeocodedAddress | null;
-}) {
-  if (!__DEV__) return;
-
-  let addressAudit: Record<string, unknown> | null = null;
-  if (info.rawAddress) {
-    const addr = info.rawAddress;
-    const allFields: (keyof Location.LocationGeocodedAddress)[] = [
-      'name',
-      'street',
-      'district',
-      'subregion',
-      'city',
-      'region',
-      'country',
-      'postalCode',
-      'isoCountryCode',
-      'timezone',
-      'formattedAddress',
-    ];
-
-    const availableFields = allFields.filter(
-      (f) => addr[f] !== null && addr[f] !== undefined && addr[f] !== '',
-    );
-    const missingFields = allFields.filter(
-      (f) => addr[f] === null || addr[f] === undefined || addr[f] === '',
-    );
-
-    addressAudit = {
-      availableFields,
-      missingFields,
-      formattedResult: info.formattedLocation,
-    };
-  }
-
-  console.log('[Location Audit (DEV)]', {
-    permissionStatus: info.permissionStatus,
-    canAskAgain: info.canAskAgain,
-    fixSource: info.fixSource,
-    latitude: info.coords ? `${info.coords.latitude.toFixed(2)}*** (redacted)` : 'none',
-    longitude: info.coords ? `${info.coords.longitude.toFixed(2)}*** (redacted)` : 'none',
-    accuracyMeters: info.coords?.accuracy ?? 'unavailable',
-    timestamp: info.timestamp ? new Date(info.timestamp).toISOString() : 'unavailable',
-    reverseGeocoding: addressAudit ?? 'not_performed_or_unavailable',
-  });
-}
 
 export function LocationProvider({ children }: { children: React.ReactNode }) {
   const isMountedRef = useRef(true);

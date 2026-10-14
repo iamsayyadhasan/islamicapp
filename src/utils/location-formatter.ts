@@ -158,3 +158,13 @@ export function formatLocationAddress(
 
   return parts.join(', ');
 }
+
+/**
+ * Formats decimal latitude and longitude into standard coordinate notation.
+ * e.g., 28.6139° N, 77.2090° E
+ */
+export function formatCoordinates(lat: number, lng: number): string {
+  const latDir = lat >= 0 ? 'N' : 'S';
+  const lngDir = lng >= 0 ? 'E' : 'W';
+  return `${Math.abs(lat).toFixed(4)}° ${latDir}, ${Math.abs(lng).toFixed(4)}° ${lngDir}`;
+}

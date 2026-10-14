@@ -1,8 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AppState, Linking } from 'react-native';
 import * as Location from 'expo-location';
-import { formatLocationAddress } from '@/utils/location-formatter';
-import { formatCoordinates } from '@/features/qibla/utils/qibla-geometry';
+import { formatCoordinates, formatLocationAddress } from '@/utils/location-formatter';
 import { logLocationDevBoundary } from '@/utils/location-dev-logger';
 import type {
   LocationCoords,

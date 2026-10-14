@@ -23,7 +23,9 @@ This is a production-grade Expo / React Native mobile application for iOS and An
 
 - **`src/app/`**: Expo Router screen routes and navigation layouts.
 - **`src/features/<feature>/`**: Modular, self-contained domain features (`components/`, `data/`, `types/`, `index.ts`).
-- **`src/components/`**: Reusable, domain-agnostic UI primitives (`ScreenContainer`, `ThemedText`).
+- **`src/components/`**: Reusable, domain-agnostic UI primitives (`ScreenContainer`, `ThemedText`, `PrimaryButton`).
+- **`src/context/`**: Cross-cutting application state providers (`LocationContext`).
+- **`src/utils/`**: Reusable, pure calculation and formatting utilities (`prayer-schedule`, `location-formatter`).
 - **`src/theme/`**: Centralized token system (`tokens/`, `themes/`, `ThemeProvider`, `useTheme`).
 - **`src/types/`**: Global cross-cutting TypeScript definitions.
 - **`docs/`**: Living architectural documentation.

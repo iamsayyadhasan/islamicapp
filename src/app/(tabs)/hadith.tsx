@@ -21,7 +21,6 @@ export default function HadithTab() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FBF9F4',
   },
   content: {
     flex: 1,

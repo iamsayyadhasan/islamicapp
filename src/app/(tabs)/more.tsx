@@ -1,13 +1,32 @@
 import React, { useState } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLocalSearchParams } from 'expo-router';
 import { ThemedText } from '@/components/typography/ThemedText';
 import { CalendarScreen } from '@/features/calendar';
 import { TasbeehScreen } from '@/features/tasbeeh';
 import { useTheme } from '@/theme';
 
 export default function MoreRoute() {
-  const [activeTab, setActiveTab] = useState<'tasbeeh' | 'calendar'>('tasbeeh');
+  const { tab } = useLocalSearchParams<{ tab?: 'tasbeeh' | 'calendar' }>();
+  const [prevTab, setPrevTab] = useState(tab);
+  const [activeTab, setActiveTab] = useState<'tasbeeh' | 'calendar'>(() =>
+    tab === 'calendar' ? 'calendar' : 'tasbeeh',
+  );
+
+  // Synchronize state during render when route param changes (React 19 pattern)
+  if (tab !== prevTab) {
+    setPrevTab(tab);
+    if (tab === 'calendar' || tab === 'tasbeeh') {
+      setActiveTab(tab);
+    }
+  }
+
+  const handleSelectTab = (newTab: 'tasbeeh' | 'calendar') => {
+    setActiveTab(newTab);
+    setPrevTab(newTab);
+  };
+
   const { theme, isDark } = useTheme();
   const insets = useSafeAreaInsets();
 
@@ -19,7 +38,7 @@ export default function MoreRoute() {
           styles.switcherBar,
           {
             paddingTop: insets.top + 6,
-            backgroundColor: isDark ? theme.colors.background.card : '#FAF8F2',
+            backgroundColor: theme.colors.background.primary,
             borderBottomColor: theme.colors.border.subtle,
           },
         ]}
@@ -28,7 +47,9 @@ export default function MoreRoute() {
           style={[
             styles.pillTrack,
             {
-              backgroundColor: isDark ? theme.colors.background.secondary : '#EDE8DC',
+              backgroundColor: isDark
+                ? theme.colors.background.secondary
+                : theme.colors.background.tertiary,
             },
           ]}
         >
@@ -36,10 +57,10 @@ export default function MoreRoute() {
             style={[
               styles.pillSegment,
               activeTab === 'tasbeeh' && {
-                backgroundColor: isDark ? theme.colors.brand.primary : '#0A3B2A',
+                backgroundColor: theme.colors.brand.primary,
               },
             ]}
-            onPress={() => setActiveTab('tasbeeh')}
+            onPress={() => handleSelectTab('tasbeeh')}
             activeOpacity={0.8}
             accessibilityRole="tab"
             accessibilityLabel="Tasbeeh Counter"
@@ -51,7 +72,7 @@ export default function MoreRoute() {
                 {
                   color:
                     activeTab === 'tasbeeh'
-                      ? '#FFFFFF'
+                      ? theme.colors.text.inverse
                       : isDark
                         ? theme.colors.text.secondary
                         : theme.colors.text.primary,
@@ -67,10 +88,10 @@ export default function MoreRoute() {
             style={[
               styles.pillSegment,
               activeTab === 'calendar' && {
-                backgroundColor: isDark ? theme.colors.brand.primary : '#0A3B2A',
+                backgroundColor: theme.colors.brand.primary,
               },
             ]}
-            onPress={() => setActiveTab('calendar')}
+            onPress={() => handleSelectTab('calendar')}
             activeOpacity={0.8}
             accessibilityRole="tab"
             accessibilityLabel="Islamic Calendar"
@@ -82,7 +103,7 @@ export default function MoreRoute() {
                 {
                   color:
                     activeTab === 'calendar'
-                      ? '#FFFFFF'
+                      ? theme.colors.text.inverse
                       : isDark
                         ? theme.colors.text.secondary
                         : theme.colors.text.primary,

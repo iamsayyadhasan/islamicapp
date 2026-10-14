@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { ThemedText } from '@/components/typography/ThemedText';
-import { palette } from '@/theme/tokens/colors';
+import { useTheme } from '@/theme';
 
 export interface QiblaInfoCardData {
   locationLabel?: string;
@@ -16,23 +16,47 @@ export interface QiblaInfoCardProps {
 }
 
 export function QiblaInfoCard({ data, onRefresh }: QiblaInfoCardProps) {
+  const { theme } = useTheme();
   const { locationLabel, cityName, coordinates } = data;
 
   return (
-    <View style={styles.cardContainer}>
+    <View
+      style={[
+        styles.cardContainer,
+        {
+          backgroundColor: theme.colors.background.card,
+          borderColor: theme.colors.border.subtle,
+        },
+      ]}
+    >
       <View style={styles.locationGroup}>
-        <ThemedText style={styles.locationLabel} weight="semibold">
+        <ThemedText
+          style={[styles.locationLabel, { color: theme.colors.text.gold }]}
+          weight="semibold"
+        >
           {locationLabel || 'Your Location'}
         </ThemedText>
-        <ThemedText style={styles.cityName} weight="bold" numberOfLines={1}>
+        <ThemedText
+          style={[styles.cityName, { color: theme.colors.text.primary }]}
+          weight="bold"
+          numberOfLines={1}
+        >
           {cityName}
         </ThemedText>
-        <ThemedText style={styles.coordinates}>{coordinates}</ThemedText>
+        <ThemedText style={[styles.coordinates, { color: theme.colors.text.tertiary }]}>
+          {coordinates}
+        </ThemedText>
       </View>
 
       {/* Right Circular Refresh Button */}
       <TouchableOpacity
-        style={styles.refreshButton}
+        style={[
+          styles.refreshButton,
+          {
+            backgroundColor: theme.colors.background.secondary,
+            borderColor: theme.colors.border.subtle,
+          },
+        ]}
         onPress={onRefresh}
         activeOpacity={0.7}
         accessibilityRole="button"
@@ -43,7 +67,7 @@ export function QiblaInfoCard({ data, onRefresh }: QiblaInfoCardProps) {
           height={18}
           viewBox="0 0 24 24"
           fill="none"
-          stroke={palette.forestGreen[800]}
+          stroke={theme.colors.brand.primary}
           strokeWidth={2.2}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -57,7 +81,6 @@ export function QiblaInfoCard({ data, onRefresh }: QiblaInfoCardProps) {
 
 const styles = StyleSheet.create({
   cardContainer: {
-    backgroundColor: palette.white,
     borderRadius: 18,
     paddingVertical: 14,
     paddingHorizontal: 18,
@@ -65,8 +88,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
-    borderColor: palette.cream[400],
-    shadowColor: palette.forestGreen[950],
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -81,27 +103,22 @@ const styles = StyleSheet.create({
   locationLabel: {
     fontSize: 12,
     lineHeight: 16,
-    color: palette.gold[700],
     letterSpacing: 0.3,
   },
   cityName: {
     fontSize: 15,
     lineHeight: 20,
-    color: '#1A2E22',
   },
   coordinates: {
     fontSize: 12,
     lineHeight: 16,
-    color: palette.slate[500],
     fontVariant: ['tabular-nums'],
   },
   refreshButton: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: palette.cream[100],
     borderWidth: 1,
-    borderColor: palette.cream[400],
     alignItems: 'center',
     justifyContent: 'center',
   },

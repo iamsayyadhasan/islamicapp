@@ -1,9 +1,5 @@
-export interface PrayerScheduleItem {
-  id: string;
-  name: string;
-  time: string;
-  isActive: boolean;
-}
+import type { PrayerScheduleItem } from '@/utils/prayer-schedule';
+export type { PrayerScheduleItem };
 
 export interface PrayerTimesScreenData {
   location: string;

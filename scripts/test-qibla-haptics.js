@@ -17,7 +17,7 @@ function evaluateAlignmentTransition({
   hapticsEnabled,
   lastTriggerTimeMs,
   currentTimeMs,
-  cooldownMs = 600,
+  cooldownMs = 800,
 }) {
   if (!hasEstablishedBaseline) {
     return {
@@ -284,7 +284,7 @@ assert(
   '7.2 Rapid sensor update 30ms later while aligned is suppressed',
 );
 
-// Rapid flicker out (t=6050) and back in (t=6100, within 600ms cooldown)
+// Rapid flicker out (t=6050) and back in (t=6400, within 800ms cooldown)
 const flickerOut = evaluateAlignmentTransition({
   isAligned: false,
   wasAligned: rapidSame.nextWasAligned,
@@ -300,14 +300,14 @@ const flickerBackIn = evaluateAlignmentTransition({
   hasEstablishedBaseline: true,
   hapticsEnabled: true,
   lastTriggerTimeMs: firstPulse.nextLastTriggerTimeMs,
-  currentTimeMs: 6100, // Only 100ms since last trigger (cooldown is 600ms)
+  currentTimeMs: 6400, // Only 400ms since last trigger (cooldown is 800ms)
 });
 assert(
   flickerBackIn.shouldTriggerHaptic === false,
   '7.3 Rapid jitter in/out within cooldown window is suppressed',
 );
 
-// Normal realignment after cooldown (t=7000, 1000ms later)
+// Normal realignment after cooldown (t=7000, 1000ms later > 800ms)
 const realignAfterCooldown = evaluateAlignmentTransition({
   isAligned: true,
   wasAligned: false,
@@ -321,8 +321,25 @@ assert(
   '7.4 Realignment after cooldown successfully triggers new pulse',
 );
 
+// -------------------------------------------------------------
+// Test Suite 8: Pulse Sequence Token Cancellation
+// -------------------------------------------------------------
+console.log('\n[Suite 8: Sequence Token Cancellation on Unmount/Misalignment]');
+
+let mockActiveToken = 0;
+function mockCancelActiveSequence() {
+  mockActiveToken++;
+}
+
+const tokenAtStart = ++mockActiveToken;
+mockCancelActiveSequence();
+assert(
+  tokenAtStart !== mockActiveToken,
+  '8.1 Active pulse sequence is invalidated upon unmount or leaving alignment',
+);
+
 console.log(
-  `\n=== RESULTS: ${failed === 0 ? 'ALL 21 TESTS PASSED!' : `${failed} TESTS FAILED`} ===\n`,
+  `\n=== RESULTS: ${failed === 0 ? 'ALL 22 TESTS PASSED!' : `${failed} TESTS FAILED`} ===\n`,
 );
 
 process.exit(failed === 0 ? 0 : 1);

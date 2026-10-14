@@ -10,7 +10,11 @@ import {
   getDirectionLabel,
   isQiblaAligned,
 } from '../utils/qibla-geometry';
-import { evaluateAlignmentTransition, triggerQiblaHapticFeedback } from '../utils/qibla-haptics';
+import {
+  cancelActiveHapticSequence,
+  evaluateAlignmentTransition,
+  triggerQiblaHapticFeedback,
+} from '../utils/qibla-haptics';
 import { DynamicQiblaState, SensorAccuracy } from '../types/qibla.types';
 import { MOCK_QIBLA_SCREEN } from '../data/qibla.mock';
 
@@ -149,6 +153,7 @@ export function useQiblaCompass() {
 
     return () => {
       isMountedRef.current = false;
+      cancelActiveHapticSequence();
       appStateSub.remove();
       if (headingSubscriptionRef.current) {
         headingSubscriptionRef.current.remove();
@@ -182,7 +187,12 @@ export function useQiblaCompass() {
     if (!compassState.isLiveCompass || compassState.deviceHeading === null) {
       wasAlignedRef.current = false;
       hasEstablishedBaselineRef.current = false;
+      cancelActiveHapticSequence();
       return;
+    }
+
+    if (!isAligned) {
+      cancelActiveHapticSequence();
     }
 
     const {

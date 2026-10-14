@@ -43,4 +43,5 @@ export interface DynamicQiblaState {
   isUsingFallback: boolean;
   canAskAgain: boolean;
   statusMessage: string | null;
+  hapticsEnabled: boolean;
 }

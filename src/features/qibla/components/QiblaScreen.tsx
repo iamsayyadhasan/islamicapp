@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Href, useRouter } from 'expo-router';
-import Svg, { Path, Polyline } from 'react-native-svg';
+import Svg, { Line, Path, Polyline, Rect } from 'react-native-svg';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ThemedText } from '@/components/typography/ThemedText';
 import { CompassDial } from './CompassDial';
@@ -23,6 +23,8 @@ export function QiblaScreen() {
     accuracy,
     isLiveCompass,
     canAskAgain,
+    hapticsEnabled,
+    toggleHaptics,
     refresh,
     requestPermission,
     openSettings,
@@ -66,26 +68,71 @@ export function QiblaScreen() {
             Qibla Direction
           </ThemedText>
 
-          <TouchableOpacity
-            style={styles.headerIconButton}
-            onPress={refresh}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="Recalibrate compass and refresh location"
-          >
-            <Svg
-              width={20}
-              height={20}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke={palette.forestGreen[800]}
-              strokeWidth={2.2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          <View style={styles.headerRightActions}>
+            {/* Haptic Feedback Toggle Button */}
+            <TouchableOpacity
+              style={styles.headerIconButton}
+              onPress={toggleHaptics}
+              activeOpacity={0.7}
+              accessibilityRole="switch"
+              accessibilityState={{ checked: hapticsEnabled }}
+              accessibilityLabel={
+                hapticsEnabled
+                  ? 'Haptic feedback is on. Tap to turn off'
+                  : 'Haptic feedback is off. Tap to turn on'
+              }
             >
-              <Path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
-            </Svg>
-          </TouchableOpacity>
+              <Svg
+                width={19}
+                height={19}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke={hapticsEnabled ? palette.forestGreen[800] : palette.slate[400]}
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                {/* Phone body */}
+                <Rect x={7} y={3} width={10} height={18} rx={2} ry={2} />
+                {/* Vibration waves */}
+                <Path d="M3 9a5 5 0 0 0 0 6" />
+                <Path d="M21 9a5 5 0 0 1 0 6" />
+                {/* Diagonal slash when disabled */}
+                {!hapticsEnabled && (
+                  <Line
+                    x1={3}
+                    y1={3}
+                    x2={21}
+                    y2={21}
+                    stroke={palette.slate[400]}
+                    strokeWidth={2.2}
+                  />
+                )}
+              </Svg>
+            </TouchableOpacity>
+
+            {/* Recalibrate / Refresh Button */}
+            <TouchableOpacity
+              style={styles.headerIconButton}
+              onPress={refresh}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Recalibrate compass and refresh location"
+            >
+              <Svg
+                width={20}
+                height={20}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke={palette.forestGreen[800]}
+                strokeWidth={2.2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <Path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+              </Svg>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Live Qibla Bearing Readout */}
@@ -99,8 +146,8 @@ export function QiblaScreen() {
           {isLiveCompass && isAligned && (
             <View style={styles.alignedBadge}>
               <View style={styles.alignedDot} />
-              <ThemedText style={styles.alignedText} weight="semibold">
-                Aligned with Kaaba
+              <ThemedText style={styles.alignedText} weight="bold">
+                Qibla Aligned
               </ThemedText>
             </View>
           )}
@@ -198,6 +245,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     lineHeight: 24,
     color: '#1A2E22',
+  },
+  headerRightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
   },
   degreeSection: {
     alignItems: 'center',

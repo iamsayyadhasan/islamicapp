@@ -10,17 +10,25 @@ import {
   getDirectionLabel,
   isQiblaAligned,
 } from '../utils/qibla-geometry';
+import { evaluateAlignmentTransition, triggerQiblaHapticFeedback } from '../utils/qibla-haptics';
 import { DynamicQiblaState, SensorAccuracy } from '../types/qibla.types';
 import { MOCK_QIBLA_SCREEN } from '../data/qibla.mock';
 
 // Default fallback reference coordinates (New Delhi, India)
 const FALLBACK_LAT = 28.6139;
 const FALLBACK_LNG = 77.209;
-const FALLBACK_DISTANCE = calculateQiblaDistance(FALLBACK_LAT, FALLBACK_LNG);
 
 export function useQiblaCompass() {
   const isMountedRef = useRef(true);
   const headingSubscriptionRef = useRef<Location.LocationSubscription | null>(null);
+
+  // Haptic feedback user preference (enabled by default)
+  const [hapticsEnabled, setHapticsEnabled] = useState<boolean>(true);
+
+  // Alignment transition tracking refs
+  const wasAlignedRef = useRef<boolean>(false);
+  const hasEstablishedBaselineRef = useRef<boolean>(false);
+  const lastHapticTimeRef = useRef<number>(0);
 
   // Consume the single shared location context used by Home and Qibla
   const sharedLocation = useLocation();
@@ -169,6 +177,41 @@ export function useQiblaCompass() {
       ? isQiblaAligned(qiblaBearing, compassState.deviceHeading)
       : false;
 
+  // Evaluate alignment transition for haptic feedback
+  useEffect(() => {
+    if (!compassState.isLiveCompass || compassState.deviceHeading === null) {
+      wasAlignedRef.current = false;
+      hasEstablishedBaselineRef.current = false;
+      return;
+    }
+
+    const {
+      shouldTriggerHaptic,
+      nextWasAligned,
+      nextHasEstablishedBaseline,
+      nextLastTriggerTimeMs,
+    } = evaluateAlignmentTransition({
+      isAligned,
+      wasAligned: wasAlignedRef.current,
+      hasEstablishedBaseline: hasEstablishedBaselineRef.current,
+      hapticsEnabled,
+      lastTriggerTimeMs: lastHapticTimeRef.current,
+      currentTimeMs: Date.now(),
+    });
+
+    wasAlignedRef.current = nextWasAligned;
+    hasEstablishedBaselineRef.current = nextHasEstablishedBaseline;
+    lastHapticTimeRef.current = nextLastTriggerTimeMs;
+
+    if (shouldTriggerHaptic) {
+      void triggerQiblaHapticFeedback();
+    }
+  }, [isAligned, hapticsEnabled, compassState.isLiveCompass, compassState.deviceHeading]);
+
+  const toggleHaptics = useCallback(() => {
+    setHapticsEnabled((prev) => !prev);
+  }, []);
+
   // Derive consolidated status
   let overallStatus: DynamicQiblaState['status'] = 'ready';
   if (sharedLocation.status === 'permission_denied') {
@@ -198,6 +241,7 @@ export function useQiblaCompass() {
     isUsingFallback: !isLive,
     canAskAgain: sharedLocation.canAskAgain,
     statusMessage: sharedLocation.statusMessage,
+    hapticsEnabled,
   };
 
   return {
@@ -205,5 +249,7 @@ export function useQiblaCompass() {
     refresh,
     requestPermission: sharedLocation.requestPermission,
     openSettings: sharedLocation.openSettings,
+    toggleHaptics,
+    setHapticsEnabled,
   };
 }

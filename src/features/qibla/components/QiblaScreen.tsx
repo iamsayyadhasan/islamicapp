@@ -1,13 +1,13 @@
 import React from 'react';
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Href, useRouter } from 'expo-router';
-import Svg, { Line, Path, Polyline } from 'react-native-svg';
+import Svg, { Path, Polyline } from 'react-native-svg';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ThemedText } from '@/components/typography/ThemedText';
 import { CompassDial } from './CompassDial';
 import { QiblaInfoCard } from './QiblaInfoCard';
 import { useQiblaCompass } from '../hooks/useQiblaCompass';
-import { shortestAngleDiff } from '../utils/qibla-geometry';
+import { palette } from '@/theme/tokens/colors';
 
 export function QiblaScreen() {
   const router = useRouter();
@@ -18,7 +18,6 @@ export function QiblaScreen() {
     coordinates,
     qiblaBearing,
     directionLabel,
-    deviceHeading,
     needleAngle,
     isAligned,
     accuracy,
@@ -37,10 +36,6 @@ export function QiblaScreen() {
     }
   };
 
-  // Calculate turn angle relative to target Qibla bearing
-  const turnDiff =
-    deviceHeading !== null ? Math.round(shortestAngleDiff(deviceHeading, qiblaBearing)) : null;
-
   return (
     <ScreenContainer style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -49,22 +44,21 @@ export function QiblaScreen() {
           <TouchableOpacity
             style={styles.headerIconButton}
             onPress={handleBack}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
             <Svg
-              width={16}
-              height={16}
+              width={22}
+              height={22}
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#334155"
-              strokeWidth={2}
+              stroke="#1A2E22"
+              strokeWidth={2.4}
               strokeLinecap="round"
               strokeLinejoin="round"
             >
-              <Line x1={19} y1={12} x2={5} y2={12} />
-              <Polyline points="12 19 5 12 12 5" />
+              <Polyline points="15 18 9 12 15 6" />
             </Svg>
           </TouchableOpacity>
 
@@ -75,16 +69,16 @@ export function QiblaScreen() {
           <TouchableOpacity
             style={styles.headerIconButton}
             onPress={refresh}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
             accessibilityRole="button"
             accessibilityLabel="Recalibrate compass and refresh location"
           >
             <Svg
-              width={16}
-              height={16}
+              width={20}
+              height={20}
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#0A3B2A"
+              stroke={palette.forestGreen[800]}
               strokeWidth={2.2}
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -94,34 +88,24 @@ export function QiblaScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Large Degree & Direction Readout */}
+        {/* Live Qibla Bearing Readout */}
         <View style={styles.degreeSection}>
           <ThemedText style={styles.degreeValue} weight="bold">
             {qiblaBearing}°
           </ThemedText>
           <ThemedText style={styles.directionLabel}>{directionLabel}</ThemedText>
 
-          {/* Dynamic Live Orientation & Alignment Status */}
-          {isLiveCompass && deviceHeading !== null ? (
-            <View style={styles.liveHeadingBadge}>
-              <View
-                style={[
-                  styles.statusDot,
-                  isAligned ? styles.statusDotAligned : styles.statusDotTracking,
-                ]}
-              />
-              <ThemedText
-                style={[styles.liveHeadingText, isAligned && styles.liveHeadingTextAligned]}
-                weight="medium"
-              >
-                {isAligned
-                  ? 'Aligned with the Kaaba'
-                  : turnDiff !== null
-                    ? `Heading: ${deviceHeading}° • Turn ${Math.abs(turnDiff)}° ${turnDiff > 0 ? 'right' : 'left'}`
-                    : `Device Heading: ${deviceHeading}°`}
+          {/* Dynamic Status Feedback */}
+          {isLiveCompass && isAligned && (
+            <View style={styles.alignedBadge}>
+              <View style={styles.alignedDot} />
+              <ThemedText style={styles.alignedText} weight="semibold">
+                Aligned with Kaaba
               </ThemedText>
             </View>
-          ) : (
+          )}
+
+          {!isLiveCompass && (
             <View style={styles.staticNoticeBadge}>
               <ThemedText style={styles.staticNoticeText}>
                 {status === 'permission_denied'
@@ -166,10 +150,12 @@ export function QiblaScreen() {
           )}
         </View>
 
-        {/* Realistic Compass Visual with Dynamic Rotation */}
-        <CompassDial heading={needleAngle} isAligned={isAligned} />
+        {/* Main UI Focus: Large Circular Compass Dial */}
+        <View style={styles.compassWrapper}>
+          <CompassDial heading={needleAngle} isAligned={isAligned} />
+        </View>
 
-        {/* Location Info Card */}
+        {/* Bottom Rounded Location Card */}
         <QiblaInfoCard
           data={{
             locationLabel,
@@ -186,101 +172,84 @@ export function QiblaScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAF8F2', // Warm cream background
+    backgroundColor: palette.cream[200], // #FAF8F2 warm cream background
   },
   scrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 20,
     paddingTop: 8,
-    paddingBottom: 80, // Safe clearance above bottom tab bar without excessive whitespace
+    paddingBottom: 88, // Safe clearance above bottom tab bar without clipping
     justifyContent: 'space-between',
   },
   headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    paddingVertical: 4,
   },
   headerIconButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 3,
-    elevation: 1,
   },
   headerTitle: {
-    fontSize: 16,
-    lineHeight: 22,
-    color: '#1E293B',
+    fontSize: 18,
+    lineHeight: 24,
+    color: '#1A2E22',
   },
   degreeSection: {
     alignItems: 'center',
-    paddingVertical: 6,
-    gap: 4,
+    paddingVertical: 4,
+    gap: 3,
   },
   degreeValue: {
-    fontSize: 34,
-    lineHeight: 40,
-    color: '#0F172A',
-    letterSpacing: 0.5,
+    fontSize: 40,
+    lineHeight: 46,
+    color: '#1A2E22',
+    letterSpacing: -0.5,
   },
   directionLabel: {
-    fontSize: 13,
-    lineHeight: 17,
-    color: '#64748B',
+    fontSize: 15,
+    lineHeight: 20,
+    color: '#6A7870',
     fontWeight: '500',
   },
-  liveHeadingBadge: {
+  alignedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: palette.forestGreen[50],
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: palette.gold[400],
     marginTop: 4,
   },
-  statusDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
+  alignedDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: palette.gold[500],
   },
-  statusDotTracking: {
-    backgroundColor: '#0A3B2A',
-  },
-  statusDotAligned: {
-    backgroundColor: '#D4AF37', // Gold dot when aligned
-  },
-  liveHeadingText: {
+  alignedText: {
     fontSize: 11,
     lineHeight: 15,
-    color: '#334155',
-  },
-  liveHeadingTextAligned: {
-    color: '#0A3B2A',
-    fontWeight: '700',
+    color: palette.forestGreen[800],
   },
   staticNoticeBadge: {
-    backgroundColor: '#F1F5F9',
+    backgroundColor: palette.cream[300],
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 14,
     marginTop: 4,
   },
   staticNoticeText: {
-    fontSize: 10,
-    lineHeight: 14,
-    color: '#64748B',
-    fontStyle: 'italic',
+    fontSize: 11,
+    lineHeight: 15,
+    color: palette.slate[600],
   },
   calibrationHintBadge: {
     backgroundColor: '#FEF3C7',
@@ -289,11 +258,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderRadius: 12,
-    marginTop: 2,
+    marginTop: 4,
   },
   calibrationHintText: {
     fontSize: 10,
-    lineHeight: 13,
+    lineHeight: 14,
     color: '#92400E',
   },
   permissionActionBanner: {
@@ -309,5 +278,10 @@ const styles = StyleSheet.create({
     fontSize: 11,
     lineHeight: 15,
     color: '#065F46',
+  },
+  compassWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 6,
   },
 });

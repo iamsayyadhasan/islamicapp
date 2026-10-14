@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { ThemedText } from '@/components/typography/ThemedText';
+import { palette } from '@/theme/tokens/colors';
 
 export interface QiblaInfoCardData {
   locationLabel?: string;
@@ -20,8 +21,10 @@ export function QiblaInfoCard({ data, onRefresh }: QiblaInfoCardProps) {
   return (
     <View style={styles.cardContainer}>
       <View style={styles.locationGroup}>
-        <ThemedText style={styles.locationLabel}>{locationLabel || 'Your Location'}</ThemedText>
-        <ThemedText style={styles.cityName} weight="bold">
+        <ThemedText style={styles.locationLabel} weight="semibold">
+          {locationLabel || 'Your Location'}
+        </ThemedText>
+        <ThemedText style={styles.cityName} weight="bold" numberOfLines={1}>
           {cityName}
         </ThemedText>
         <ThemedText style={styles.coordinates}>{coordinates}</ThemedText>
@@ -33,14 +36,14 @@ export function QiblaInfoCard({ data, onRefresh }: QiblaInfoCardProps) {
         onPress={onRefresh}
         activeOpacity={0.7}
         accessibilityRole="button"
-        accessibilityLabel="Refresh current location and compass"
+        accessibilityLabel="Refresh current location"
       >
         <Svg
-          width={16}
-          height={16}
+          width={18}
+          height={18}
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#0A3B2A"
+          stroke={palette.forestGreen[800]}
           strokeWidth={2.2}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -54,47 +57,51 @@ export function QiblaInfoCard({ data, onRefresh }: QiblaInfoCardProps) {
 
 const styles = StyleSheet.create({
   cardContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    backgroundColor: palette.white,
+    borderRadius: 18,
     paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingHorizontal: 18,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
-    borderColor: '#F1F5F9',
-    shadowColor: '#000000',
+    borderColor: palette.cream[400],
+    shadowColor: palette.forestGreen[950],
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
+    shadowOpacity: 0.04,
     shadowRadius: 8,
-    elevation: 1,
-    marginTop: 4,
+    elevation: 2,
+    marginHorizontal: 4,
   },
   locationGroup: {
-    gap: 2,
+    gap: 3,
     flex: 1,
-    marginRight: 10,
+    marginRight: 12,
   },
   locationLabel: {
-    fontSize: 10,
-    color: '#94A3B8',
-    fontWeight: '300',
+    fontSize: 12,
+    lineHeight: 16,
+    color: palette.gold[700],
+    letterSpacing: 0.3,
   },
   cityName: {
-    fontSize: 12,
-    color: '#1E293B',
-    lineHeight: 16,
+    fontSize: 15,
+    lineHeight: 20,
+    color: '#1A2E22',
   },
   coordinates: {
-    fontSize: 10,
-    color: '#64748B',
+    fontSize: 12,
+    lineHeight: 16,
+    color: palette.slate[500],
     fontVariant: ['tabular-nums'],
   },
   refreshButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#ECFDF5',
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: palette.cream[100],
+    borderWidth: 1,
+    borderColor: palette.cream[400],
     alignItems: 'center',
     justifyContent: 'center',
   },

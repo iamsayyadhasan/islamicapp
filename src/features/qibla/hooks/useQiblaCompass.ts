@@ -36,8 +36,8 @@ export function useQiblaCompass() {
   const cityName = isLive ? sharedLocation.locationLabel : MOCK_QIBLA_SCREEN.cityName;
   const locationLabel = isLive ? 'Your Location' : 'Sample Location';
   const coordinatesText = isLive
-    ? `${formatCoordinates(activeLat, activeLng)} • ~${distanceKm.toLocaleString()} km to Kaaba`
-    : `${MOCK_QIBLA_SCREEN.coordinates} • ~${FALLBACK_DISTANCE} km to Kaaba`;
+    ? formatCoordinates(activeLat, activeLng)
+    : MOCK_QIBLA_SCREEN.coordinates;
 
   const [compassState, setCompassState] = useState<{
     deviceHeading: number | null;

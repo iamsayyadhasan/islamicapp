@@ -7,6 +7,7 @@
     "@react-native-async-storage/async-storage": "2.2.0",
     "adhan": "^4.4.6",
     "expo": "~57.0.29",
+    "expo-audio": "~57.0.5",
     "expo-constants": "~57.0.22",
     "expo-device": "~57.0.2",
     "expo-font": "~57.0.4",
@@ -54,7 +55,8 @@
     "test:qibla": "node ./scripts/test-qibla-haptics.js",
     "test:prayer": "node ./scripts/test-prayer-schedule.js",
     "test:prayer:dynamic": "node ./scripts/test-prayer-dynamic.js",
-    "test": "npm run test:qibla && npm run test:prayer && npm run test:prayer:dynamic"
+    "test:tasbeeh": "node ./scripts/test-tasbeeh-sound.js",
+    "test": "npm run test:qibla && npm run test:prayer && npm run test:prayer:dynamic && npm run test:tasbeeh"
   },
   "private": true
 }

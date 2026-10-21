@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { Href, useRouter } from 'expo-router';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ThemedText } from '@/components/typography/ThemedText';
 import { useTheme } from '@/theme';
 import { MOCK_DHIKR_ITEMS } from '../data/tasbeeh.mock';
+import { useTasbeehAudio } from '../hooks/useTasbeehAudio';
 import { DhikrItem, TasbeehTarget } from '../types/tasbeeh.types';
 import { SelectedDhikrCard } from './SelectedDhikrCard';
 import { TargetSelectorRow } from './TargetSelectorRow';
@@ -21,6 +23,7 @@ export function TasbeehScreen({
 }: TasbeehScreenProps = {}) {
   const router = useRouter();
   const { theme, isDark } = useTheme();
+  const { soundEnabled, toggleSound, playTapFeedback } = useTasbeehAudio();
 
   const handleBack = () => {
     if (router.canGoBack()) {
@@ -40,7 +43,21 @@ export function TasbeehScreen({
   const handleIncrement = () => {
     setCount((prev) => {
       const nextCount = prev + 1;
-      if (nextCount >= target) {
+      const isCompleted = nextCount >= target;
+
+      // Optional sound feedback (respects sound toggle and throttles rapid taps)
+      playTapFeedback(isCompleted);
+
+      // Tactile physical feedback
+      if (Platform.OS !== 'web') {
+        if (isCompleted) {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+        } else {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+        }
+      }
+
+      if (isCompleted) {
         setCompletedRounds((r) => r + 1);
         return 0; // Loop around to 0 on reaching target
       }
@@ -88,7 +105,12 @@ export function TasbeehScreen({
   return (
     <ScreenContainer edges={edges} style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        <TasbeehHeroHeader canGoBack={router.canGoBack()} onBack={handleBack} />
+        <TasbeehHeroHeader
+          canGoBack={router.canGoBack()}
+          onBack={handleBack}
+          soundEnabled={soundEnabled}
+          onToggleSound={toggleSound}
+        />
 
         {/* Selected Dhikr Card with Arabic Calligraphy & Switcher */}
         <SelectedDhikrCard selectedDhikr={selectedDhikr} onSelectDhikr={handleSelectDhikr} />

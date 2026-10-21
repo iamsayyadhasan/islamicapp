@@ -5,4 +5,6 @@ export * from './components/SelectedDhikrCard';
 export * from './components/TasbeehCounterDial';
 export * from './components/TargetSelectorRow';
 export * from './data/tasbeeh.mock';
+export * from './hooks/useTasbeehAudio';
 export * from './types/tasbeeh.types';
+export * from './utils/tasbeeh-sound';

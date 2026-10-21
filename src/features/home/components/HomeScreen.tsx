@@ -16,8 +16,15 @@ export function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { userName, greeting } = MOCK_HOME_DASHBOARD;
 
-  const { prayers, nextPrayer, locationLabel, gregorianDate, hijriDateEstimated, isUsingFallback } =
-    useDynamicPrayerTimes();
+  const {
+    prayers,
+    currentPrayer,
+    nextPrayer,
+    locationLabel,
+    gregorianDate,
+    hijriDateEstimated,
+    isUsingFallback,
+  } = useDynamicPrayerTimes();
 
   const handleOpenQibla = () => {
     router.push('/(tabs)/qibla' as Href);
@@ -57,7 +64,7 @@ export function HomeScreen() {
         />
 
         <HomeNextPrayerHero
-          prayerName={nextPrayer.name}
+          prayerName={currentPrayer?.name ?? nextPrayer.name}
           countdownString={nextPrayer.countdownString}
           dateLabel={`${gregorianDate} • ${hijriDateEstimated}`}
           onPress={handleOpenPrayerTimes}

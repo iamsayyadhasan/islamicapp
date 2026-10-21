@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Href, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { IslamicPatternOverlay } from '@/components/illustrations';
-import { useLocation } from '@/context/LocationContext';
-import { deriveNextPrayerFromSchedule, getCurrentDaySeconds } from '@/utils/prayer-schedule';
+import { useDynamicPrayerTimes } from '@/features/prayer-times';
 import { MOCK_HOME_DASHBOARD } from '../data/home.mock';
 import { HomeUserBar } from './HomeUserBar';
 import { HomeNextPrayerHero } from './HomeNextPrayerHero';
@@ -15,35 +14,10 @@ import { HomeTasbeehCard } from './HomeTasbeehCard';
 export function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const {
-    userName,
-    greeting,
-    location: defaultLocation,
-    nextPrayer,
-    prayers,
-  } = MOCK_HOME_DASHBOARD;
-  const {
-    locationLabel: sharedLocationLabel,
-    isLiveLocation,
-    status: locationStatus,
-  } = useLocation();
+  const { userName, greeting } = MOCK_HOME_DASHBOARD;
 
-  const displayLocation = isLiveLocation
-    ? sharedLocationLabel
-    : locationStatus === 'locating'
-      ? 'Locating...'
-      : defaultLocation;
-
-  const [prayerState, setPrayerState] = useState(() =>
-    deriveNextPrayerFromSchedule(prayers, getCurrentDaySeconds()),
-  );
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setPrayerState(deriveNextPrayerFromSchedule(prayers, getCurrentDaySeconds()));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [prayers]);
+  const { prayers, nextPrayer, locationLabel, gregorianDate, hijriDateEstimated, isUsingFallback } =
+    useDynamicPrayerTimes();
 
   const handleOpenQibla = () => {
     router.push('/(tabs)/qibla' as Href);
@@ -77,22 +51,23 @@ export function HomeScreen() {
         <HomeUserBar
           userName={userName}
           greeting={greeting}
-          locationLabel={displayLocation}
+          locationLabel={locationLabel}
           onOpenQibla={handleOpenQibla}
           onOpenNotifications={handleOpenNotifications}
         />
 
         <HomeNextPrayerHero
-          prayerName={prayerState.nextPrayerName}
-          countdownString={prayerState.countdownString}
-          dateLabel={nextPrayer.dateLabel}
+          prayerName={nextPrayer.name}
+          countdownString={nextPrayer.countdownString}
+          dateLabel={`${gregorianDate} • ${hijriDateEstimated}`}
           onPress={handleOpenPrayerTimes}
         />
       </View>
 
       {/* Bottom Warm Cream Daily Prayer Timetable Sheet */}
       <HomePrayerTimetable
-        prayers={prayerState.prayersWithActiveState}
+        prayers={prayers}
+        isUsingFallback={isUsingFallback}
         onViewSchedule={handleOpenPrayerTimes}
       >
         <HomeTasbeehCard onPress={handleOpenTasbeeh} />

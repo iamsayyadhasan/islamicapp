@@ -1,19 +1,38 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Href, useRouter } from 'expo-router';
 import Svg, { Line, Rect } from 'react-native-svg';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ThemedText } from '@/components/typography/ThemedText';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
-import { MOCK_PRAYER_TIMES_SCREEN } from '../data/prayer-times.mock';
-import { PrayerTimesHeader } from './PrayerTimesHeader';
+import { useDynamicPrayerTimes } from '../hooks/useDynamicPrayerTimes';
+import { CalculationMethodModal } from './CalculationMethodModal';
+import { MadhabModal } from './MadhabModal';
 import { PrayerScheduleList } from './PrayerScheduleList';
 import { PrayerSettingsCard } from './PrayerSettingsCard';
+import { PrayerTimesHeader } from './PrayerTimesHeader';
 
 export function PrayerTimesScreen() {
   const router = useRouter();
-  const { location, gregorianDate, hijriDate, calculationMethod, madhab, prayers } =
-    MOCK_PRAYER_TIMES_SCREEN;
+  const {
+    prayers,
+    locationLabel,
+    gregorianDate,
+    hijriDateEstimated,
+    calculationMethodLabel,
+    madhabLabel,
+    calculationMethodKey,
+    madhabKey,
+    isUsingFallback,
+    canAskAgain,
+    setCalculationMethod,
+    setMadhab,
+    requestPermission,
+    openSettings,
+  } = useDynamicPrayerTimes();
+
+  const [methodModalVisible, setMethodModalVisible] = useState(false);
+  const [madhabModalVisible, setMadhabModalVisible] = useState(false);
 
   const handleBack = () => {
     if (router.canGoBack()) {
@@ -34,20 +53,35 @@ export function PrayerTimesScreen() {
     } as Href);
   };
 
+  const handleRequestLocation = () => {
+    if (canAskAgain) {
+      void requestPermission();
+    } else {
+      void openSettings();
+    }
+  };
+
   return (
     <ScreenContainer style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <PrayerTimesHeader
           gregorianDate={gregorianDate}
-          hijriDate={hijriDate}
-          location={location}
+          hijriDate={hijriDateEstimated}
+          location={locationLabel}
+          isUsingFallback={isUsingFallback}
           onBack={handleBack}
           onOpenQibla={handleOpenQibla}
+          onRequestLocation={handleRequestLocation}
         />
 
         <PrayerScheduleList prayers={prayers} />
 
-        <PrayerSettingsCard calculationMethod={calculationMethod} madhab={madhab} />
+        <PrayerSettingsCard
+          calculationMethod={calculationMethodLabel}
+          madhab={madhabLabel}
+          onPressMethod={() => setMethodModalVisible(true)}
+          onPressMadhab={() => setMadhabModalVisible(true)}
+        />
 
         {/* Monthly Timetable Action Button */}
         <PrimaryButton
@@ -73,7 +107,7 @@ export function PrayerTimesScreen() {
           style={styles.monthlyButton}
         />
 
-        {/* Sample Timetable Footnote */}
+        {/* Informative Footnote */}
         <View style={styles.disclaimerContainer}>
           <ThemedText
             variant="caption"
@@ -81,11 +115,27 @@ export function PrayerTimesScreen() {
             align="center"
             style={styles.disclaimerText}
           >
-            * Sample prayer times for demonstration. Authoritative times depend on local mosque
-            timetable.
+            {isUsingFallback
+              ? '* Showing sample coordinates. Tap location above to enable GPS for your exact schedule.'
+              : '* Calculated offline via astronomical formulas. Local mosque timings may vary slightly.'}
           </ThemedText>
         </View>
       </ScrollView>
+
+      {/* Settings Modals */}
+      <CalculationMethodModal
+        visible={methodModalVisible}
+        selectedMethod={calculationMethodKey}
+        onSelectMethod={setCalculationMethod}
+        onClose={() => setMethodModalVisible(false)}
+      />
+
+      <MadhabModal
+        visible={madhabModalVisible}
+        selectedMadhab={madhabKey}
+        onSelectMadhab={setMadhab}
+        onClose={() => setMadhabModalVisible(false)}
+      />
     </ScreenContainer>
   );
 }

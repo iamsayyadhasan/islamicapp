@@ -6,12 +6,14 @@ import { HomePrayerItem } from '../types/home.types';
 
 export interface HomePrayerTimetableProps {
   prayers: HomePrayerItem[];
+  isUsingFallback?: boolean;
   onViewSchedule: () => void;
   children?: React.ReactNode;
 }
 
 export function HomePrayerTimetable({
   prayers,
+  isUsingFallback = false,
   onViewSchedule,
   children,
 }: HomePrayerTimetableProps) {
@@ -32,14 +34,16 @@ export function HomePrayerTimetable({
             >
               Today&apos;s Prayers
             </ThemedText>
-            <View style={[styles.sampleBadge, { backgroundColor: theme.colors.border.subtle }]}>
-              <ThemedText
-                style={[styles.sampleBadgeText, { color: theme.colors.text.tertiary }]}
-                weight="medium"
-              >
-                Sample
-              </ThemedText>
-            </View>
+            {isUsingFallback && (
+              <View style={[styles.sampleBadge, { backgroundColor: theme.colors.border.subtle }]}>
+                <ThemedText
+                  style={[styles.sampleBadgeText, { color: theme.colors.text.tertiary }]}
+                  weight="medium"
+                >
+                  Sample
+                </ThemedText>
+              </View>
+            )}
           </View>
 
           <TouchableOpacity

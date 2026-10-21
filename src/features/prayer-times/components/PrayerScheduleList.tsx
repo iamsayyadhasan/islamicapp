@@ -22,7 +22,7 @@ export function PrayerScheduleList({ prayers }: PrayerScheduleListProps) {
       ]}
     >
       {prayers.map((prayer, i) => {
-        const isAsr = prayer.isActive;
+        const isActive = prayer.isActive;
         const isLast = i === prayers.length - 1;
 
         return (
@@ -30,9 +30,9 @@ export function PrayerScheduleList({ prayers }: PrayerScheduleListProps) {
             key={prayer.id}
             style={[
               styles.prayerRow,
-              isAsr && [styles.prayerRowActive, { backgroundColor: theme.colors.brand.primary }],
+              isActive && [styles.prayerRowActive, { backgroundColor: theme.colors.brand.primary }],
               !isLast &&
-                !isAsr && [
+                !isActive && [
                   styles.rowBorderBottom,
                   { borderBottomColor: theme.colors.border.subtle },
                 ],
@@ -42,9 +42,9 @@ export function PrayerScheduleList({ prayers }: PrayerScheduleListProps) {
               style={[
                 styles.prayerNameText,
                 { color: theme.colors.text.primary },
-                isAsr && [styles.prayerNameTextActive, { color: theme.colors.text.inverse }],
+                isActive && [styles.prayerNameTextActive, { color: theme.colors.text.inverse }],
               ]}
-              weight={isAsr ? 'bold' : 'medium'}
+              weight={isActive ? 'bold' : 'medium'}
             >
               {prayer.name}
             </ThemedText>
@@ -52,14 +52,14 @@ export function PrayerScheduleList({ prayers }: PrayerScheduleListProps) {
               style={[
                 styles.prayerTimeText,
                 { color: theme.colors.text.secondary },
-                isAsr && [
+                isActive && [
                   styles.prayerTimeTextActive,
                   {
                     color: isDark ? theme.colors.brand.primaryLight : '#DCEDDE',
                   },
                 ],
               ]}
-              weight={isAsr ? 'bold' : 'medium'}
+              weight={isActive ? 'bold' : 'medium'}
             >
               {prayer.time}
             </ThemedText>

@@ -8,16 +8,20 @@ export interface PrayerTimesHeaderProps {
   gregorianDate: string;
   hijriDate: string;
   location: string;
+  isUsingFallback?: boolean;
   onBack: () => void;
   onOpenQibla: () => void;
+  onRequestLocation?: () => void;
 }
 
 export function PrayerTimesHeader({
   gregorianDate,
   hijriDate,
   location,
+  isUsingFallback = false,
   onBack,
   onOpenQibla,
+  onRequestLocation,
 }: PrayerTimesHeaderProps) {
   const { theme } = useTheme();
 
@@ -103,7 +107,15 @@ export function PrayerTimesHeader({
         <ThemedText style={[styles.hijriDateText, { color: theme.colors.text.tertiary }]}>
           {hijriDate}
         </ThemedText>
-        <View style={styles.locationRow}>
+
+        <TouchableOpacity
+          style={styles.locationRow}
+          onPress={isUsingFallback ? onRequestLocation : undefined}
+          disabled={!isUsingFallback || !onRequestLocation}
+          activeOpacity={0.7}
+          accessibilityRole={isUsingFallback ? 'button' : 'text'}
+          accessibilityLabel={`Location: ${location}. ${isUsingFallback ? 'Tap to enable live GPS' : ''}`}
+        >
           <Svg
             width={12}
             height={12}
@@ -120,7 +132,19 @@ export function PrayerTimesHeader({
           <ThemedText style={[styles.locationText, { color: theme.colors.brand.primary }]}>
             {location}
           </ThemedText>
-        </View>
+          {isUsingFallback && (
+            <View
+              style={[styles.sampleBadge, { backgroundColor: theme.colors.background.secondary }]}
+            >
+              <ThemedText
+                style={[styles.sampleBadgeText, { color: theme.colors.text.tertiary }]}
+                weight="medium"
+              >
+                Sample
+              </ThemedText>
+            </View>
+          )}
+        </TouchableOpacity>
       </View>
     </>
   );
@@ -173,5 +197,15 @@ const styles = StyleSheet.create({
   locationText: {
     fontSize: 11,
     fontWeight: '600',
+  },
+  sampleBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 6,
+    marginLeft: 2,
+  },
+  sampleBadgeText: {
+    fontSize: 9,
+    lineHeight: 12,
   },
 });

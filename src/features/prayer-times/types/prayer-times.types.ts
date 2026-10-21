@@ -3,7 +3,6 @@ export type { PrayerScheduleItem };
 
 export type CalculationMethodKey =
   | 'MuslimWorldLeague'
-  | 'Karachi'
   | 'Egyptian'
   | 'UmmAlQura'
   | 'Dubai'

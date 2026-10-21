@@ -30,12 +30,7 @@ export const CALCULATION_METHOD_OPTIONS: CalculationMethodInfo[] = [
     description: 'Standard international reference (Fajr 18°, Isha 17°)',
     region: 'International / Europe / Asia',
   },
-  {
-    key: 'Karachi',
-    label: 'Univ. of Islamic Sciences, Karachi',
-    description: 'Standard across India, Pakistan, Bangladesh (Fajr 18°, Isha 18°)',
-    region: 'South Asia (India, Pakistan, Bangladesh)',
-  },
+
   {
     key: 'UmmAlQura',
     label: 'Umm al-Qura University, Makkah',

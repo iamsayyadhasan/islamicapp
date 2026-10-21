@@ -21,9 +21,9 @@ export function HomeNextPrayerHero({
       onPress={onPress}
       activeOpacity={0.9}
       accessibilityRole="button"
-      accessibilityLabel={`Next prayer: ${prayerName}, ${countdownString} remaining`}
+      accessibilityLabel={`Current prayer: ${prayerName}, ${countdownString} remaining`}
     >
-      <ThemedText style={styles.nextPrayerLabel}>NEXT PRAYER</ThemedText>
+      <ThemedText style={styles.nextPrayerLabel}>CURRENT PRAYER</ThemedText>
       <ThemedText style={styles.prayerNameTitle} weight="bold">
         {prayerName}
       </ThemedText>

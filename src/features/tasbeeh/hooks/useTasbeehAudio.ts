@@ -11,6 +11,24 @@ import {
 const TICK_SOUND_ASSET = require('@/assets/sounds/tasbeeh-tick.wav');
 const COMPLETE_SOUND_ASSET = require('@/assets/sounds/tasbeeh-complete.wav');
 
+// SSR polyfill for Audio in Node.js environment during static export
+if (typeof window === 'undefined' && typeof (globalThis as any).Audio === 'undefined') {
+  (globalThis as any).Audio = class {
+    currentTime = 0;
+    duration = 0;
+    preload = '';
+    crossOrigin = '';
+    ontimeupdate = null;
+    play() {
+      return Promise.resolve();
+    }
+    pause() {}
+    load() {}
+    addEventListener() {}
+    removeEventListener() {}
+  };
+}
+
 export interface UseTasbeehAudioResult {
   soundEnabled: boolean;
   toggleSound: () => void;

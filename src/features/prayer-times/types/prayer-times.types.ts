@@ -2,17 +2,7 @@ import type { PrayerScheduleItem } from '@/utils/prayer-schedule';
 export type { PrayerScheduleItem };
 
 export type CalculationMethodKey =
-  | 'MuslimWorldLeague'
-  | 'Egyptian'
-  | 'UmmAlQura'
-  | 'Dubai'
-  | 'Qatar'
-  | 'Kuwait'
-  | 'NorthAmerica'
-  | 'Singapore'
-  | 'Turkey'
-  | 'Tehran'
-  | 'MoonsightingCommittee';
+  'Karachi' | 'MuslimWorldLeague' | 'Egyptian' | 'Kuwait' | 'Qatar' | 'Turkey' | 'Singapore';
 
 export type MadhabKey = 'Hanafi' | 'Shafi';
 

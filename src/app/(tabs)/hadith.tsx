@@ -1,35 +1,41 @@
-import { ScreenContainer } from '@/components/layout/ScreenContainer';
-import { ThemedText } from '@/components/typography/ThemedText';
-import { StyleSheet, View } from 'react-native';
+import React from 'react';
+import { FeatureUnderReview, MilestoneItem } from '@/components';
+
+const HADITH_MILESTONES: MilestoneItem[] = [
+  {
+    id: 'bukhari_muslim',
+    label: 'Sahih al-Bukhari & Sahih Muslim Catalog',
+    status: 'completed',
+  },
+  {
+    id: 'categories',
+    label: 'Categorized Topical Chapters (Iman, Salah, Akhlaq)',
+    status: 'completed',
+  },
+  {
+    id: 'bilingual',
+    label: 'Arabic & English Dual Text Synchronization',
+    status: 'in_progress',
+  },
+  {
+    id: 'isnad',
+    label: 'Chain of Transmission (Isnad) & Grading Verification',
+    status: 'review',
+  },
+];
 
 export default function HadithTab() {
   return (
-    <ScreenContainer style={styles.container}>
-      <View style={styles.content}>
-        <ThemedText style={styles.icon}>📿</ThemedText>
-        <ThemedText variant="h2" weight="bold">
-          Hadith Collections
-        </ThemedText>
-        <ThemedText variant="bodySmall" color="secondary" align="center">
-          Explore authentic collections from Sahih Bukhari, Muslim, and more.
-        </ThemedText>
-      </View>
-    </ScreenContainer>
+    <FeatureUnderReview
+      iconType="hadith"
+      badgeText="Compilation & Grading In Progress"
+      arabicTitle="الحديث الشريف"
+      englishTitle="Hadith Collections"
+      tagline="Authentic Teachings of Prophet Muhammad (ﷺ)"
+      overviewText="Comprehensive searchable compilations from the primary Kutub al-Sittah with authentic Isnad chains and scholarly commentary."
+      milestones={HADITH_MILESTONES}
+      scholarlyNote="All Hadith narrations and authenticity gradings (Sahih, Hasan) are cross-verified by Hadith specialists against classical references."
+      etaLabel="Scheduled for release in the upcoming milestone update, in sha Allah"
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-    gap: 12,
-  },
-  icon: {
-    fontSize: 48,
-  },
-});

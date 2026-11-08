@@ -21,7 +21,7 @@ export const SHARED_PRAYER_TIMES_DATA: PrayerTimesScreenData = {
   location: 'Badaun, India (Sample)',
   gregorianDate: 'May 13, 2025',
   hijriDate: '15 Dhul-Qadah 1446',
-  calculationMethod: 'Muslim World League',
+  calculationMethod: 'University of Islamic Sciences, Karachi',
   madhab: 'Hanafi',
   prayers: SHARED_PRAYER_SCHEDULE,
 };

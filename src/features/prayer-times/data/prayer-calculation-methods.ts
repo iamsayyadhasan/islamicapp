@@ -17,79 +17,54 @@ export const FALLBACK_PRAYER_COORDINATES = {
 
 /**
  * Clearly defined default configuration:
- * Global standard: Muslim World League calculation method with Shafi'i Asr.
+ * University of Islamic Sciences, Karachi calculation method with Hanafi Asr.
  * User can change this at any time without geographic auto-inference.
  */
-export const DEFAULT_CALCULATION_METHOD: CalculationMethodKey = 'MuslimWorldLeague';
+export const DEFAULT_CALCULATION_METHOD: CalculationMethodKey = 'Karachi';
 export const DEFAULT_MADHAB: MadhabKey = 'Hanafi';
 
 export const CALCULATION_METHOD_OPTIONS: CalculationMethodInfo[] = [
   {
+    key: 'Karachi',
+    label: 'University of Islamic Sciences, Karachi',
+    description: 'Fajr 18°, Isha 18°',
+    region: 'Pakistan, India, Bangladesh, Afghanistan',
+  },
+  {
     key: 'MuslimWorldLeague',
     label: 'Muslim World League',
-    description: 'Standard international reference (Fajr 18°, Isha 17°)',
-    region: 'International / Europe / Asia',
-  },
-
-  {
-    key: 'UmmAlQura',
-    label: 'Umm al-Qura University, Makkah',
-    description: 'Standard in Saudi Arabia & Arabian Peninsula (Fajr 18.5°, Isha +90m)',
-    region: 'Saudi Arabia & Gulf',
+    description: 'Fajr 18°, Isha 17°',
+    region: 'Nigeria, Morocco, Australia',
   },
   {
     key: 'Egyptian',
     label: 'Egyptian General Authority',
-    description: 'Standard in Egypt, Africa & parts of Middle East (Fajr 19.5°, Isha 17.5°)',
-    region: 'Egypt & North Africa',
-  },
-  {
-    key: 'NorthAmerica',
-    label: 'ISNA (North America)',
-    description: 'Standard for USA and Canada (Fajr 15°, Isha 15°)',
-    region: 'United States & Canada',
-  },
-  {
-    key: 'Dubai',
-    label: 'Dubai Islamic Affairs',
-    description: 'Official method for the United Arab Emirates (Fajr 18.2°, Isha 18.2°)',
-    region: 'United Arab Emirates',
-  },
-  {
-    key: 'Singapore',
-    label: 'MUIS (Singapore)',
-    description: 'Official method for Singapore (Fajr 20°, Isha 18°)',
-    region: 'Singapore & Southeast Asia',
-  },
-  {
-    key: 'Turkey',
-    label: 'Diyanet İşleri Başkanlığı',
-    description: 'Official method for Turkey (Fajr 18°, Isha 17°)',
-    region: 'Turkey',
-  },
-  {
-    key: 'Qatar',
-    label: 'Qatar Ministry of Awqaf',
-    description: 'Standard in Qatar (Fajr 18°, Isha +90m)',
-    region: 'Qatar',
+    description: 'Fajr 19.5°, Isha 17.5°',
+    region: 'Egypt',
   },
   {
     key: 'Kuwait',
-    label: 'Kuwait Ministry of Awqaf',
-    description: 'Standard in Kuwait (Fajr 18°, Isha 17.5°)',
+    label: 'Kuwait',
+    description: 'Fajr 18°, Isha 17.5°',
     region: 'Kuwait',
   },
   {
-    key: 'Tehran',
-    label: 'University of Tehran',
-    description: 'Institute of Geophysics (Fajr 17.7°, Isha 14°)',
-    region: 'Iran',
+    key: 'Qatar',
+    label: 'Qatar',
+    description: 'Fajr 18°, Isha 90 min after Maghrib',
+    region: 'Qatar',
   },
   {
-    key: 'MoonsightingCommittee',
-    label: 'Moonsighting Committee Worldwide',
-    description: 'Standardized criteria by Moonsighting Committee',
-    region: 'Global',
+    key: 'Turkey',
+    label: 'Diyanet (Turkey)',
+    description: 'Fajr 18°, Isha 17°',
+    region: 'Turkey',
+  },
+  {
+    key: 'Singapore',
+    label: 'Singapore / Malaysia / Indonesia',
+    description: 'Fajr 20°, Isha 18°',
+    region: 'Indonesia, Malaysia, Singapore',
   },
 ];
 

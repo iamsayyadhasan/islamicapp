@@ -18,7 +18,7 @@ export function getCalculationParameters(methodKey: CalculationMethodKey): Calcu
   if (typeof methodFn === 'function') {
     return methodFn();
   }
-  return CalculationMethod.MuslimWorldLeague();
+  return CalculationMethod.Karachi();
 }
 
 export function formatTime12h(date: Date): string {

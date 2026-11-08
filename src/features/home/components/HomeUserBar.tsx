@@ -9,6 +9,7 @@ export interface HomeUserBarProps {
   locationLabel: string;
   onOpenQibla: () => void;
   onOpenNotifications: () => void;
+  onOpenLocation?: () => void;
 }
 
 export function HomeUserBar({
@@ -17,6 +18,7 @@ export function HomeUserBar({
   locationLabel,
   onOpenQibla,
   onOpenNotifications,
+  onOpenLocation,
 }: HomeUserBarProps) {
   return (
     <View style={styles.userBar}>
@@ -31,7 +33,14 @@ export function HomeUserBar({
           <ThemedText style={styles.userNameText} weight="bold">
             {userName}
           </ThemedText>
-          <View style={styles.locationRow}>
+          <TouchableOpacity
+            style={styles.locationRow}
+            onPress={onOpenLocation}
+            disabled={!onOpenLocation}
+            activeOpacity={onOpenLocation ? 0.7 : 1}
+            accessibilityRole={onOpenLocation ? 'button' : undefined}
+            accessibilityLabel={`Location: ${locationLabel}. Tap to view prayer times.`}
+          >
             <Svg
               width={11}
               height={11}
@@ -48,7 +57,7 @@ export function HomeUserBar({
             <ThemedText style={styles.locationText} numberOfLines={1}>
               {locationLabel}
             </ThemedText>
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
 

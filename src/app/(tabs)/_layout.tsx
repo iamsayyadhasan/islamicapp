@@ -132,13 +132,6 @@ export default function TabsLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="prayer"
-        options={{
-          href: null, // Accessible via router.push('/(tabs)/prayer')
-          title: 'Prayer Times',
-        }}
-      />
     </Tabs>
   );
 }

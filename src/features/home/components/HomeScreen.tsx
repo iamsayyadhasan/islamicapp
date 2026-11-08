@@ -61,6 +61,7 @@ export function HomeScreen() {
           locationLabel={locationLabel}
           onOpenQibla={handleOpenQibla}
           onOpenNotifications={handleOpenNotifications}
+          onOpenLocation={handleOpenPrayerTimes}
         />
 
         <HomeNextPrayerHero

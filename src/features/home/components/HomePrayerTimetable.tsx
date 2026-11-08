@@ -27,7 +27,13 @@ export function HomePrayerTimetable({
       >
         {/* Section Header */}
         <View style={styles.sheetHeader}>
-          <View style={styles.sheetTitleGroup}>
+          <TouchableOpacity
+            style={styles.sheetTitleGroup}
+            onPress={onViewSchedule}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="View full prayer times schedule"
+          >
             <ThemedText
               style={[styles.sheetTitle, { color: theme.colors.text.primary }]}
               weight="bold"
@@ -44,7 +50,7 @@ export function HomePrayerTimetable({
                 </ThemedText>
               </View>
             )}
-          </View>
+          </TouchableOpacity>
 
           <TouchableOpacity
             onPress={onViewSchedule}
@@ -65,8 +71,10 @@ export function HomePrayerTimetable({
         {prayers.map((item) => {
           const isActive = item.isActive;
           return (
-            <View
+            <TouchableOpacity
               key={item.id}
+              onPress={onViewSchedule}
+              activeOpacity={0.7}
               style={[
                 styles.timetableRow,
                 isActive && [
@@ -74,6 +82,8 @@ export function HomePrayerTimetable({
                   { backgroundColor: theme.colors.brand.primaryLight },
                 ],
               ]}
+              accessibilityRole="button"
+              accessibilityLabel={`${item.name} prayer time: ${item.time}. Tap to view full schedule.`}
             >
               <ThemedText
                 style={[
@@ -95,7 +105,7 @@ export function HomePrayerTimetable({
               >
                 {item.time}
               </ThemedText>
-            </View>
+            </TouchableOpacity>
           );
         })}
 

@@ -14,7 +14,7 @@ export type CalculationMethodKey =
   | 'Tehran'
   | 'MoonsightingCommittee';
 
-export type MadhabKey = 'Shafi' | 'Hanafi';
+export type MadhabKey = 'Hanafi' | 'Shafi';
 
 export interface CalculationMethodInfo {
   key: CalculationMethodKey;

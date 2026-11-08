@@ -22,7 +22,7 @@ export const SHARED_PRAYER_TIMES_DATA: PrayerTimesScreenData = {
   gregorianDate: 'May 13, 2025',
   hijriDate: '15 Dhul-Qadah 1446',
   calculationMethod: 'Muslim World League',
-  madhab: "Shafi'i",
+  madhab: 'Hanafi',
   prayers: SHARED_PRAYER_SCHEDULE,
 };
 

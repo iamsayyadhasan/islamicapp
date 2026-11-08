@@ -31,7 +31,7 @@ export function HomeScreen() {
   };
 
   const handleOpenPrayerTimes = () => {
-    router.push('/(tabs)/prayer' as Href);
+    router.push('/prayer' as Href);
   };
 
   const handleOpenTasbeeh = () => {

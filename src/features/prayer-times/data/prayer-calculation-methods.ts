@@ -21,7 +21,7 @@ export const FALLBACK_PRAYER_COORDINATES = {
  * User can change this at any time without geographic auto-inference.
  */
 export const DEFAULT_CALCULATION_METHOD: CalculationMethodKey = 'MuslimWorldLeague';
-export const DEFAULT_MADHAB: MadhabKey = 'Shafi';
+export const DEFAULT_MADHAB: MadhabKey = 'Hanafi';
 
 export const CALCULATION_METHOD_OPTIONS: CalculationMethodInfo[] = [
   {
@@ -95,14 +95,14 @@ export const CALCULATION_METHOD_OPTIONS: CalculationMethodInfo[] = [
 
 export const MADHAB_OPTIONS: MadhabInfo[] = [
   {
-    key: 'Shafi',
-    label: "Shafi'i (Standard)",
-    description: 'Asr begins when shadow equals object length (Shafi, Maliki, Hanbali)',
-  },
-  {
     key: 'Hanafi',
     label: 'Hanafi (Later Asr)',
     description:
       'Asr begins when shadow is twice object length (common in India, Pakistan, Turkey)',
+  },
+  {
+    key: 'Shafi',
+    label: "Shafi'i (Standard)",
+    description: 'Asr begins when shadow equals object length (Shafi, Maliki, Hanbali)',
   },
 ];

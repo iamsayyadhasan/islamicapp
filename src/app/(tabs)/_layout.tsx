@@ -2,17 +2,20 @@ import React from 'react';
 import { Platform } from 'react-native';
 import { Tabs } from 'expo-router';
 import Svg, { Circle, Line, Path, Polygon } from 'react-native-svg';
+import { useTheme } from '@/theme';
 
 export default function TabsLayout() {
+  const { theme } = useTheme();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#0A3B2A', // Deep Forest Islamic Green
-        tabBarInactiveTintColor: '#94A3B8',
+        tabBarActiveTintColor: theme.colors.brand.primary,
+        tabBarInactiveTintColor: theme.colors.text.tertiary,
         tabBarStyle: {
-          backgroundColor: '#FAF8F2',
-          borderTopColor: '#E2E8F0',
+          backgroundColor: theme.colors.background.primary,
+          borderTopColor: theme.colors.border.subtle,
           height: Platform.OS === 'ios' ? 84 : 62,
           paddingBottom: Platform.OS === 'ios' ? 24 : 8,
           paddingTop: 6,
@@ -127,13 +130,6 @@ export default function TabsLayout() {
               <Line x1={17} y1={16} x2={23} y2={16} />
             </Svg>
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="prayer"
-        options={{
-          href: null, // Accessible via router.push('/(tabs)/prayer')
-          title: 'Prayer Times',
         }}
       />
     </Tabs>

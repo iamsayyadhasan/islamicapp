@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { ThemedText } from '@/components/typography/ThemedText';
+import { useTheme } from '@/theme';
 
 export interface QiblaInfoCardData {
   locationLabel?: string;
@@ -15,32 +16,58 @@ export interface QiblaInfoCardProps {
 }
 
 export function QiblaInfoCard({ data, onRefresh }: QiblaInfoCardProps) {
+  const { theme } = useTheme();
   const { locationLabel, cityName, coordinates } = data;
 
   return (
-    <View style={styles.cardContainer}>
+    <View
+      style={[
+        styles.cardContainer,
+        {
+          backgroundColor: theme.colors.background.card,
+          borderColor: theme.colors.border.subtle,
+        },
+      ]}
+    >
       <View style={styles.locationGroup}>
-        <ThemedText style={styles.locationLabel}>{locationLabel || 'Your Location'}</ThemedText>
-        <ThemedText style={styles.cityName} weight="bold">
+        <ThemedText
+          style={[styles.locationLabel, { color: theme.colors.text.gold }]}
+          weight="semibold"
+        >
+          {locationLabel || 'Your Location'}
+        </ThemedText>
+        <ThemedText
+          style={[styles.cityName, { color: theme.colors.text.primary }]}
+          weight="bold"
+          numberOfLines={1}
+        >
           {cityName}
         </ThemedText>
-        <ThemedText style={styles.coordinates}>{coordinates}</ThemedText>
+        <ThemedText style={[styles.coordinates, { color: theme.colors.text.tertiary }]}>
+          {coordinates}
+        </ThemedText>
       </View>
 
       {/* Right Circular Refresh Button */}
       <TouchableOpacity
-        style={styles.refreshButton}
+        style={[
+          styles.refreshButton,
+          {
+            backgroundColor: theme.colors.background.secondary,
+            borderColor: theme.colors.border.subtle,
+          },
+        ]}
         onPress={onRefresh}
         activeOpacity={0.7}
         accessibilityRole="button"
-        accessibilityLabel="Refresh current location and compass"
+        accessibilityLabel="Refresh current location"
       >
         <Svg
-          width={16}
-          height={16}
+          width={18}
+          height={18}
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#0A3B2A"
+          stroke={theme.colors.brand.primary}
           strokeWidth={2.2}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -54,47 +81,44 @@ export function QiblaInfoCard({ data, onRefresh }: QiblaInfoCardProps) {
 
 const styles = StyleSheet.create({
   cardContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 18,
     paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingHorizontal: 18,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
-    borderColor: '#F1F5F9',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
+    shadowOpacity: 0.04,
     shadowRadius: 8,
-    elevation: 1,
-    marginTop: 4,
+    elevation: 2,
+    marginHorizontal: 4,
   },
   locationGroup: {
-    gap: 2,
+    gap: 3,
     flex: 1,
-    marginRight: 10,
+    marginRight: 12,
   },
   locationLabel: {
-    fontSize: 10,
-    color: '#94A3B8',
-    fontWeight: '300',
+    fontSize: 12,
+    lineHeight: 16,
+    letterSpacing: 0.3,
   },
   cityName: {
-    fontSize: 12,
-    color: '#1E293B',
-    lineHeight: 16,
+    fontSize: 15,
+    lineHeight: 20,
   },
   coordinates: {
-    fontSize: 10,
-    color: '#64748B',
+    fontSize: 12,
+    lineHeight: 16,
     fontVariant: ['tabular-nums'],
   },
   refreshButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#ECFDF5',
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },

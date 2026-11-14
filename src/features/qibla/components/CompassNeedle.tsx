@@ -1,108 +1,100 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { ThemedText } from '@/components/typography/ThemedText';
+import Svg, { Line, Polygon } from 'react-native-svg';
+import { palette } from '@/theme/tokens/colors';
 
 export interface CompassNeedleProps {
+  dialSize: number;
+  center: number;
+  radius: number;
   heading: number;
-  qiblaBearing: number;
   isAligned: boolean;
 }
 
-export function CompassNeedle({ heading }: CompassNeedleProps) {
-  // Needle rotates counter to heading
-  const needleRotation = `${-heading}deg`;
+export function CompassNeedle({
+  dialSize,
+  center,
+  radius,
+  heading,
+  isAligned,
+}: CompassNeedleProps) {
+  // Needle geometry
+  const tipNorthY = center - radius * 0.74;
+  const waistNorthY = center - radius * 0.12;
+  const waistNorthW = radius * 0.055;
+
+  const tipSouthY = center + radius * 0.35;
+  const waistSouthY = center + radius * 0.1;
+  const waistSouthW = radius * 0.038;
 
   return (
-    <View style={styles.container} pointerEvents="none">
-      {/* Rotating Compass Needle */}
-      <View style={[styles.needleLayer, { transform: [{ rotate: needleRotation }] }]}>
-        {/* North Green Needle Pointer */}
-        <View style={styles.needleHalfNorth} />
-        {/* South Grey Needle Pointer */}
-        <View style={styles.needleHalfSouth} />
-      </View>
+    <View
+      style={[
+        styles.rotatingAssembly,
+        {
+          width: dialSize,
+          height: dialSize,
+          transform: [{ rotate: `${heading}deg` }],
+        },
+      ]}
+      pointerEvents="none"
+    >
+      <Svg width={dialSize} height={dialSize} viewBox={`0 0 ${dialSize} ${dialSize}`}>
+        {/* North Pointer (pointing to Qibla at 0° in rotating frame) */}
+        <Polygon
+          points={`${center},${tipNorthY} ${center - waistNorthW},${waistNorthY} ${center},${center}`}
+          fill={palette.forestGreen[800]}
+        />
+        <Polygon
+          points={`${center},${tipNorthY} ${center + waistNorthW},${waistNorthY} ${center},${center}`}
+          fill={palette.forestGreen[500]}
+        />
+        {/* Center Gold Ridge */}
+        <Line
+          x1={center}
+          y1={tipNorthY}
+          x2={center}
+          y2={center}
+          stroke={palette.gold[400]}
+          strokeWidth={1.2}
+        />
 
-      {/* Kaaba Center 3D Cube Emblem */}
-      <View style={styles.kaabaCenterWrapper}>
-        <View style={styles.kaabaCube}>
-          <View style={styles.kaabaGoldBand} />
-          <ThemedText style={styles.kaabaEmoji}>🕋</ThemedText>
-        </View>
-      </View>
+        {/* South Pointer (Counter-weight) */}
+        <Polygon
+          points={`${center},${tipSouthY} ${center - waistSouthW},${waistSouthY} ${center},${center}`}
+          fill={palette.forestGreen[700]}
+        />
+        <Polygon
+          points={`${center},${tipSouthY} ${center + waistSouthW},${waistSouthY} ${center},${center}`}
+          fill={palette.forestGreen[300]}
+        />
+        <Line
+          x1={center}
+          y1={center}
+          x2={center}
+          y2={tipSouthY}
+          stroke={palette.cream[600]}
+          strokeWidth={0.8}
+        />
+
+        {/* Needle Tip Alignment Diamond Highlight */}
+        {isAligned && (
+          <Polygon
+            points={`${center},${tipNorthY - 5} ${center + 5},${tipNorthY} ${center},${tipNorthY + 5} ${center - 5},${tipNorthY}`}
+            fill={palette.gold[400]}
+          />
+        )}
+      </Svg>
     </View>
   );
 }
 
-const NEEDLE_HEIGHT = 90;
-const NEEDLE_WIDTH = 16;
-
 const styles = StyleSheet.create({
-  container: {
-    ...StyleSheet.absoluteFill,
+  rotatingAssembly: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  needleLayer: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  needleHalfNorth: {
-    position: 'absolute',
-    bottom: '50%',
-    width: 0,
-    height: 0,
-    borderLeftWidth: NEEDLE_WIDTH / 2,
-    borderRightWidth: NEEDLE_WIDTH / 2,
-    borderBottomWidth: NEEDLE_HEIGHT,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderBottomColor: '#0C4326', // Deep Green Pointer
-  },
-  needleHalfSouth: {
-    position: 'absolute',
-    top: '50%',
-    width: 0,
-    height: 0,
-    borderLeftWidth: NEEDLE_WIDTH / 2,
-    borderRightWidth: NEEDLE_WIDTH / 2,
-    borderTopWidth: NEEDLE_HEIGHT,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderTopColor: '#C4D0CA', // Soft Slate/Cream South Pointer
-  },
-  kaabaCenterWrapper: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: '#1E2421',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#E6B94D', // Gold Border
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    zIndex: 10,
-  },
-  kaabaCube: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  kaabaGoldBand: {
-    position: 'absolute',
-    top: 6,
-    width: '100%',
-    height: 3,
-    backgroundColor: '#E6B94D',
-  },
-  kaabaEmoji: {
-    fontSize: 26,
-    lineHeight: 32,
   },
 });

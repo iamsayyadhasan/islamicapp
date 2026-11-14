@@ -37,10 +37,13 @@ export interface DynamicQiblaState {
   distanceKm: number;
   deviceHeading: number | null;
   needleAngle: number;
+  dialAngle: number;
   isAligned: boolean;
   accuracy: SensorAccuracy | null;
   isLiveCompass: boolean;
+  isTrueNorth?: boolean;
   isUsingFallback: boolean;
   canAskAgain: boolean;
   statusMessage: string | null;
+  hapticsEnabled: boolean;
 }

@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AppState, Platform } from 'react-native';
-import * as Location from 'expo-location';
 import { useLocation } from '@/context/LocationContext';
 import {
   calculateNeedleAngle,
@@ -9,20 +7,30 @@ import {
   formatCoordinates,
   getDirectionLabel,
   isQiblaAligned,
+  normalizeAngle,
 } from '../utils/qibla-geometry';
-import { DynamicQiblaState, SensorAccuracy } from '../types/qibla.types';
+import {
+  cancelActiveHapticSequence,
+  evaluateAlignmentTransition,
+  triggerQiblaHapticFeedback,
+} from '../utils/qibla-haptics';
+import { DynamicQiblaState } from '../types/qibla.types';
 import { MOCK_QIBLA_SCREEN } from '../data/qibla.mock';
+import { useDeviceHeading } from './useDeviceHeading';
 
 // Default fallback reference coordinates (New Delhi, India)
 const FALLBACK_LAT = 28.6139;
 const FALLBACK_LNG = 77.209;
-const FALLBACK_DISTANCE = calculateQiblaDistance(FALLBACK_LAT, FALLBACK_LNG);
 
 export function useQiblaCompass() {
-  const isMountedRef = useRef(true);
-  const headingSubscriptionRef = useRef<Location.LocationSubscription | null>(null);
+  const [hapticsEnabled, setHapticsEnabled] = useState<boolean>(true);
 
-  // Consume the single shared location context used by Home and Qibla
+  // Alignment transition tracking refs
+  const wasAlignedRef = useRef<boolean>(false);
+  const hasEstablishedBaselineRef = useRef<boolean>(false);
+  const lastHapticTimeRef = useRef<number>(0);
+
+  // Shared location context
   const sharedLocation = useLocation();
 
   const isLive = sharedLocation.isLiveLocation && sharedLocation.coords !== null;
@@ -36,138 +44,80 @@ export function useQiblaCompass() {
   const cityName = isLive ? sharedLocation.locationLabel : MOCK_QIBLA_SCREEN.cityName;
   const locationLabel = isLive ? 'Your Location' : 'Sample Location';
   const coordinatesText = isLive
-    ? `${formatCoordinates(activeLat, activeLng)} • ~${distanceKm.toLocaleString()} km to Kaaba`
-    : `${MOCK_QIBLA_SCREEN.coordinates} • ~${FALLBACK_DISTANCE} km to Kaaba`;
+    ? formatCoordinates(activeLat, activeLng)
+    : MOCK_QIBLA_SCREEN.coordinates;
 
-  const [compassState, setCompassState] = useState<{
-    deviceHeading: number | null;
-    accuracy: SensorAccuracy | null;
-    isLiveCompass: boolean;
-    sensorUnavailable: boolean;
-  }>({
-    deviceHeading: null,
-    accuracy: null,
-    isLiveCompass: false,
-    sensorUnavailable: false,
-  });
+  // Magnetometer device heading subscription
+  const { headingState, startWatchingHeading, stopWatchingHeading } = useDeviceHeading();
 
-  const mapAccuracy = (acc: number): SensorAccuracy => {
-    if (acc >= 3) return 'high';
-    if (acc === 2) return 'medium';
-    if (acc === 1) return 'low';
-    return 'uncalibrated';
-  };
+  const refresh = useCallback(async () => {
+    stopWatchingHeading();
+    await sharedLocation.refreshLocation();
+    startWatchingHeading();
+  }, [sharedLocation, startWatchingHeading, stopWatchingHeading]);
 
-  /**
-   * Starts watching compass heading from hardware magnetometer.
-   */
-  const startWatchingHeading = useCallback(() => {
-    if (headingSubscriptionRef.current) return;
+  // Derive dial face rotation, needle angle, and alignment dynamically
+  // Dial face rotates counter to device heading to keep cardinal directions locked to the physical horizon
+  const dialAngle =
+    headingState.isLiveCompass && headingState.deviceHeading !== null
+      ? normalizeAngle(-headingState.deviceHeading)
+      : 0;
 
-    if (Platform.OS === 'web') {
-      if (isMountedRef.current) {
-        setCompassState({
-          deviceHeading: null,
-          accuracy: null,
-          isLiveCompass: false,
-          sensorUnavailable: true,
-        });
-      }
+  const needleAngle =
+    headingState.isLiveCompass && headingState.deviceHeading !== null
+      ? Math.round(calculateNeedleAngle(qiblaBearing, headingState.deviceHeading))
+      : qiblaBearing;
+
+  // CRITICAL AUDIT FIX: Must have valid live coordinates before claiming alignment or vibrating
+  const isAligned =
+    isLive && headingState.isLiveCompass && headingState.deviceHeading !== null
+      ? isQiblaAligned(qiblaBearing, headingState.deviceHeading)
+      : false;
+
+  // Evaluate alignment transition for haptic feedback
+  useEffect(() => {
+    // Suppress haptics if location is not live, or compass is not active, or heading is null
+    if (!isLive || !headingState.isLiveCompass || headingState.deviceHeading === null) {
+      wasAlignedRef.current = false;
+      hasEstablishedBaselineRef.current = false;
+      cancelActiveHapticSequence();
       return;
     }
 
-    Location.watchHeadingAsync(
-      (headingData) => {
-        if (!isMountedRef.current) return;
+    if (!isAligned) {
+      cancelActiveHapticSequence();
+    }
 
-        const rawHeading =
-          headingData.trueHeading >= 0 ? headingData.trueHeading : headingData.magHeading;
-
-        if (typeof rawHeading !== 'number' || isNaN(rawHeading)) return;
-
-        const normalizedHeading = ((rawHeading % 360) + 360) % 360;
-        const currentAccuracy = mapAccuracy(headingData.accuracy);
-
-        setCompassState({
-          deviceHeading: Math.round(normalizedHeading),
-          accuracy: currentAccuracy,
-          isLiveCompass: true,
-          sensorUnavailable: false,
-        });
-      },
-      () => {
-        if (!isMountedRef.current) return;
-        setCompassState({
-          deviceHeading: null,
-          accuracy: null,
-          isLiveCompass: false,
-          sensorUnavailable: true,
-        });
-      },
-    )
-      .then((sub) => {
-        if (!isMountedRef.current) {
-          sub.remove();
-        } else {
-          headingSubscriptionRef.current = sub;
-        }
-      })
-      .catch(() => {
-        if (!isMountedRef.current) return;
-        setCompassState({
-          deviceHeading: null,
-          accuracy: null,
-          isLiveCompass: false,
-          sensorUnavailable: true,
-        });
-      });
-  }, []);
-
-  // Subscribe to device heading on mount and handle AppState transitions
-  useEffect(() => {
-    isMountedRef.current = true;
-    startWatchingHeading();
-
-    const appStateSub = AppState.addEventListener('change', (nextState) => {
-      if (nextState === 'active') {
-        startWatchingHeading();
-      } else {
-        if (headingSubscriptionRef.current) {
-          headingSubscriptionRef.current.remove();
-          headingSubscriptionRef.current = null;
-        }
-      }
+    const {
+      shouldTriggerHaptic,
+      nextWasAligned,
+      nextHasEstablishedBaseline,
+      nextLastTriggerTimeMs,
+    } = evaluateAlignmentTransition({
+      isAligned,
+      wasAligned: wasAlignedRef.current,
+      hasEstablishedBaseline: hasEstablishedBaselineRef.current,
+      hapticsEnabled,
+      lastTriggerTimeMs: lastHapticTimeRef.current,
+      currentTimeMs: Date.now(),
     });
 
-    return () => {
-      isMountedRef.current = false;
-      appStateSub.remove();
-      if (headingSubscriptionRef.current) {
-        headingSubscriptionRef.current.remove();
-        headingSubscriptionRef.current = null;
-      }
-    };
-  }, [startWatchingHeading]);
+    wasAlignedRef.current = nextWasAligned;
+    hasEstablishedBaselineRef.current = nextHasEstablishedBaseline;
+    lastHapticTimeRef.current = nextLastTriggerTimeMs;
 
-  const refresh = useCallback(async () => {
-    if (headingSubscriptionRef.current) {
-      headingSubscriptionRef.current.remove();
-      headingSubscriptionRef.current = null;
+    if (shouldTriggerHaptic) {
+      void triggerQiblaHapticFeedback();
     }
-    await sharedLocation.refreshLocation();
-    startWatchingHeading();
-  }, [sharedLocation, startWatchingHeading]);
 
-  // Derive needle angle and alignment dynamically from current bearing and heading
-  const needleAngle =
-    compassState.isLiveCompass && compassState.deviceHeading !== null
-      ? Math.round(calculateNeedleAngle(qiblaBearing, compassState.deviceHeading))
-      : qiblaBearing;
+    return () => {
+      cancelActiveHapticSequence();
+    };
+  }, [isAligned, isLive, hapticsEnabled, headingState.isLiveCompass, headingState.deviceHeading]);
 
-  const isAligned =
-    compassState.isLiveCompass && compassState.deviceHeading !== null
-      ? isQiblaAligned(qiblaBearing, compassState.deviceHeading)
-      : false;
+  const toggleHaptics = useCallback(() => {
+    setHapticsEnabled((prev) => !prev);
+  }, []);
 
   // Derive consolidated status
   let overallStatus: DynamicQiblaState['status'] = 'ready';
@@ -177,7 +127,7 @@ export function useQiblaCompass() {
     overallStatus = 'location_unavailable';
   } else if (sharedLocation.status === 'locating') {
     overallStatus = 'locating';
-  } else if (compassState.sensorUnavailable) {
+  } else if (headingState.sensorUnavailable) {
     overallStatus = 'sensor_unavailable';
   }
 
@@ -190,14 +140,17 @@ export function useQiblaCompass() {
     qiblaBearing,
     directionLabel,
     distanceKm,
-    deviceHeading: compassState.deviceHeading,
+    deviceHeading: headingState.deviceHeading,
     needleAngle,
+    dialAngle,
     isAligned,
-    accuracy: compassState.accuracy,
-    isLiveCompass: compassState.isLiveCompass,
+    accuracy: headingState.accuracy,
+    isLiveCompass: headingState.isLiveCompass,
+    isTrueNorth: headingState.isTrueNorth,
     isUsingFallback: !isLive,
     canAskAgain: sharedLocation.canAskAgain,
     statusMessage: sharedLocation.statusMessage,
+    hapticsEnabled,
   };
 
   return {
@@ -205,5 +158,7 @@ export function useQiblaCompass() {
     refresh,
     requestPermission: sharedLocation.requestPermission,
     openSettings: sharedLocation.openSettings,
+    toggleHaptics,
+    setHapticsEnabled,
   };
 }

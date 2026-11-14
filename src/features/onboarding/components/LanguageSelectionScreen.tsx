@@ -5,11 +5,13 @@ import Svg, { Polyline } from 'react-native-svg';
 import { ScreenContainer } from '@/components/layout/ScreenContainer';
 import { ThemedText } from '@/components/typography/ThemedText';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
+import { useTheme } from '@/theme';
 import { MOCK_LANGUAGES } from '../data/onboarding.mock';
 import { LanguageOption } from '../types/onboarding.types';
 
 export function LanguageSelectionScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption>(MOCK_LANGUAGES[0]);
 
   const handleContinue = () => {
@@ -20,12 +22,24 @@ export function LanguageSelectionScreen() {
     <ScreenContainer style={styles.container}>
       <View style={styles.mainContent}>
         {/* Title */}
-        <ThemedText style={styles.headerTitle} weight="bold" align="center">
+        <ThemedText
+          style={[styles.headerTitle, { color: theme.colors.text.primary }]}
+          weight="bold"
+          align="center"
+        >
           Choose Language
         </ThemedText>
 
         {/* Language Selection Card */}
-        <View style={styles.card}>
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: theme.colors.background.card,
+              borderColor: theme.colors.border.subtle,
+            },
+          ]}
+        >
           <ScrollView showsVerticalScrollIndicator={false}>
             {MOCK_LANGUAGES.map((lang, index) => {
               const isSelected = selectedLanguage.id === lang.id;
@@ -34,15 +48,26 @@ export function LanguageSelectionScreen() {
               return (
                 <View key={lang.id}>
                   <TouchableOpacity
-                    style={[styles.languageRow, isSelected && styles.languageRowSelected]}
+                    style={[
+                      styles.languageRow,
+                      isSelected && [
+                        styles.languageRowSelected,
+                        { backgroundColor: theme.colors.brand.primaryLight },
+                      ],
+                    ]}
                     onPress={() => setSelectedLanguage(lang)}
                     activeOpacity={0.7}
                   >
                     <View style={styles.textGroup}>
-                      <ThemedText style={styles.langName} weight="bold">
+                      <ThemedText
+                        style={[styles.langName, { color: theme.colors.text.primary }]}
+                        weight="bold"
+                      >
                         {lang.name}
                       </ThemedText>
-                      <ThemedText style={styles.langSub}>{lang.nativeName || lang.name}</ThemedText>
+                      <ThemedText style={[styles.langSub, { color: theme.colors.text.tertiary }]}>
+                        {lang.nativeName || lang.name}
+                      </ThemedText>
                     </View>
 
                     {isSelected ? (
@@ -51,7 +76,7 @@ export function LanguageSelectionScreen() {
                         height={18}
                         viewBox="0 0 24 24"
                         fill="none"
-                        stroke="#0A3B2A"
+                        stroke={theme.colors.brand.primary}
                         strokeWidth={3}
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -64,7 +89,7 @@ export function LanguageSelectionScreen() {
                         height={16}
                         viewBox="0 0 24 24"
                         fill="none"
-                        stroke="#CBD5E1"
+                        stroke={theme.colors.border.default}
                         strokeWidth={2}
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -74,7 +99,11 @@ export function LanguageSelectionScreen() {
                     )}
                   </TouchableOpacity>
 
-                  {!isLast && <View style={styles.divider} />}
+                  {!isLast && (
+                    <View
+                      style={[styles.divider, { backgroundColor: theme.colors.border.subtle }]}
+                    />
+                  )}
                 </View>
               );
             })}
@@ -93,7 +122,6 @@ export function LanguageSelectionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAF8F2', // Warm cream
     justifyContent: 'space-between',
     paddingHorizontal: 24,
     paddingTop: 20,
@@ -105,15 +133,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     lineHeight: 22,
-    color: '#0F172A',
     marginBottom: 16,
     marginTop: 8,
   },
   card: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.03,
@@ -128,25 +153,20 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
   },
-  languageRowSelected: {
-    backgroundColor: '#ECFDF5',
-  },
+  languageRowSelected: {},
   textGroup: {
     gap: 2,
   },
   langName: {
     fontSize: 14,
     lineHeight: 18,
-    color: '#0F172A',
   },
   langSub: {
     fontSize: 10,
     lineHeight: 14,
-    color: '#94A3B8',
   },
   divider: {
     height: 1,
-    backgroundColor: '#F1F5F9',
   },
   bottomSection: {
     width: '100%',

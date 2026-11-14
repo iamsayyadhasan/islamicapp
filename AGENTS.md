@@ -23,7 +23,9 @@ This is a production-grade Expo / React Native mobile application for iOS and An
 
 - **`src/app/`**: Expo Router screen routes and navigation layouts.
 - **`src/features/<feature>/`**: Modular, self-contained domain features (`components/`, `data/`, `types/`, `index.ts`).
-- **`src/components/`**: Reusable, domain-agnostic UI primitives (`ScreenContainer`, `ThemedText`).
+- **`src/components/`**: Reusable, domain-agnostic UI primitives (`ScreenContainer`, `ThemedText`, `PrimaryButton`).
+- **`src/context/`**: Cross-cutting application state providers (`LocationContext`).
+- **`src/utils/`**: Reusable, pure calculation and formatting utilities (`prayer-schedule`, `location-formatter`).
 - **`src/theme/`**: Centralized token system (`tokens/`, `themes/`, `ThemeProvider`, `useTheme`).
 - **`src/types/`**: Global cross-cutting TypeScript definitions.
 - **`docs/`**: Living architectural documentation.
@@ -48,3 +50,55 @@ npm run lint            # ESLint static analysis
 npm run format:check    # Prettier code formatting validation
 npx expo-doctor         # Expo dependencies & config health check
 ```
+
+## 5. File Size & Modular Code Guidelines
+
+1. **Preferred File Size:** Keep every source code file at approximately 200 lines or fewer whenever practical.
+
+2. **Maximum File Size:** A source code file should not exceed 250 lines. If a file approaches or exceeds this limit, refactor it into smaller, logically organized modules.
+
+3. **Split by Responsibility:** Separate large files according to their actual responsibilities. For example:
+   - UI rendering → focused components
+   - Business logic → domain functions or services
+   - React state and side effects → custom hooks
+   - Types and interfaces → dedicated type files
+   - Static fixtures → data files
+   - Reusable calculations → utility modules
+   - Validation and formatting → dedicated helpers
+
+4. **Keep Components Focused:** A component should primarily handle one coherent UI responsibility. Extract repeated or independently meaningful sections into child components when doing so improves readability and maintainability.
+
+5. **Avoid Artificial Splitting:** Do not split files into tiny modules merely to satisfy the line limit. Every extracted module must have a clear responsibility and improve code organization.
+
+6. **Preserve Existing Architecture:** Follow the current feature-based structure under `src/features/<feature>/`. Keep feature-specific code inside its feature directory unless it is genuinely shared across features.
+
+7. **Keep Route Files Thin:** Files under `src/app/` must remain lightweight navigation route mounts. Move screen rendering and business logic into the appropriate feature modules.
+
+8. **Count Code, Not Just Lines:** The limit is a maintainability guideline for source code. Blank lines, comments, and formatting should not be manipulated to evade it. Generated files, lockfiles, snapshots, and other machine-generated artifacts are exempt.
+
+9. **Refactor Safely:** When splitting a file:
+   - Preserve existing behavior, UI, navigation, and public interfaces.
+   - Update imports and exports correctly.
+   - Avoid circular dependencies.
+   - Avoid duplicating logic or creating unnecessary abstractions.
+   - Add or update tests where appropriate.
+   - Run the project's required verification commands after the refactor.
+
+10. **Existing Oversized Files:** When modifying a source file that already exceeds 250 lines, assess whether it can be safely split as part of the task. Do not perform unrelated, large-scale refactors without a clear benefit.
+
+11. **Exceptions Require Justification:** If a file must exceed 250 lines for a legitimate technical reason, explain the reason in the final report and identify why splitting it would reduce maintainability.
+
+12. **Final File Size Audit:** Before completing a task, check the size of newly created or substantially modified source files. Report any files exceeding 250 lines and explain any justified exceptions.
+
+## 6. Definition of Done
+
+A task is complete only when:
+
+- The implementation follows the existing architecture and file-size guidelines.
+- No avoidable source file exceeds 250 lines.
+- TypeScript, lint, formatting, and relevant tests pass.
+- `npx expo-doctor` has been executed when required by the project verification workflow.
+- Any failed checks, environmental blockers, or justified file-size exceptions are explicitly reported.
+- The final report lists the important files changed and the verification results.
+
+Never claim a check passed unless its command was actually executed and the result was verified.

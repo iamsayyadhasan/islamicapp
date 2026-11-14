@@ -1,198 +1,172 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import Svg, { Polyline } from 'react-native-svg';
 import { IsometricKaaba } from '@/components/illustrations';
-import { ThemedText } from '@/components/typography/ThemedText';
+import { palette } from '@/theme/tokens/colors';
+import { CompassDialFace } from './CompassDialFace';
+import { CompassNeedle } from './CompassNeedle';
 
 export interface CompassDialProps {
   heading?: number;
+  dialHeading?: number;
   isAligned?: boolean;
+  size?: number;
 }
 
-export function CompassDial({ heading = 293, isAligned = false }: CompassDialProps) {
+export function CompassDial({
+  heading = 0,
+  dialHeading = 0,
+  isAligned = false,
+  size,
+}: CompassDialProps) {
+  const { width } = useWindowDimensions();
+  const defaultSize = Math.min(Math.round(width - 48), 336);
+  const dialSize = size ?? defaultSize;
+  const center = dialSize / 2;
+  const radius = dialSize / 2;
+  const kaabaSize = Math.round(dialSize * 0.19);
+
   return (
-    <View style={styles.outerContainer}>
-      {/* Outer Bezel */}
-      <View style={[styles.bezel, isAligned && styles.bezelAligned]}>
-        {/* Soft Parchment Inner Dial */}
-        <View style={styles.innerDial}>
-          {/* 360-degree Tick Marks */}
-          <View style={StyleSheet.absoluteFill} pointerEvents="none">
-            {Array.from({ length: 36 }).map((_, i) => {
-              const deg = i * 10;
-              const isMajor = deg % 30 === 0;
-              return (
-                <View
-                  key={deg}
-                  style={[
-                    styles.tickSlot,
-                    {
-                      transform: [{ rotate: `${deg}deg` }],
-                    },
-                  ]}
-                >
-                  <View style={[styles.tickMark, isMajor ? styles.tickMajor : styles.tickMinor]} />
-                </View>
-              );
-            })}
-          </View>
+    <View style={[styles.outerContainer, { width: dialSize, height: dialSize }]}>
+      <View
+        style={[
+          styles.bezel,
+          {
+            width: dialSize,
+            height: dialSize,
+            borderRadius: radius,
+          },
+          isAligned && styles.bezelAligned,
+        ]}
+      >
+        {/* Rotating Dial Face (Disc, Ticks, Rose, Cardinal N/E/S/W locked to physical horizon) */}
+        <View
+          style={[
+            styles.rotatingAssembly,
+            {
+              width: dialSize,
+              height: dialSize,
+              transform: [{ rotate: `${dialHeading}deg` }],
+            },
+          ]}
+          pointerEvents="none"
+        >
+          <CompassDialFace
+            dialSize={dialSize}
+            center={center}
+            radius={radius}
+            isAligned={isAligned}
+          />
+        </View>
 
-          {/* Cardinal Directions */}
-          <ThemedText style={[styles.cardinalText, styles.cardinalN]} weight="bold">
-            N
-          </ThemedText>
-          <ThemedText style={[styles.cardinalText, styles.cardinalS]} weight="bold">
-            S
-          </ThemedText>
-          <ThemedText style={[styles.cardinalText, styles.cardinalE]} weight="bold">
-            E
-          </ThemedText>
-          <ThemedText style={[styles.cardinalText, styles.cardinalW]} weight="bold">
-            W
-          </ThemedText>
+        {/* Stationary Top Direction Indicator (Fixed V-notch Chevron at 12 o'clock / device heading) */}
+        <View
+          style={[
+            styles.stationaryChevron,
+            {
+              width: dialSize,
+              height: dialSize,
+            },
+          ]}
+          pointerEvents="none"
+        >
+          <Svg width={dialSize} height={dialSize} viewBox={`0 0 ${dialSize} ${dialSize}`}>
+            <Polyline
+              points={`${center - 8},${radius * 0.025} ${center},${radius * 0.08} ${center + 8},${radius * 0.025}`}
+              stroke={isAligned ? palette.gold[500] : palette.cream[800]}
+              strokeWidth={2.2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            />
+          </Svg>
+        </View>
 
-          {/* Rotating Compass Needle & Center Isometric Kaaba */}
-          <View style={[styles.rotatingAssembly, { transform: [{ rotate: `${heading}deg` }] }]}>
-            {/* Emerald Pointer Ray */}
-            <View style={styles.emeraldRay} />
+        {/* Rotating Needle Assembly (Points to Qibla relative to device heading) */}
+        <CompassNeedle
+          dialSize={dialSize}
+          center={center}
+          radius={radius}
+          heading={heading}
+          isAligned={isAligned}
+        />
 
-            {/* North Green Arrowhead */}
-            <View style={styles.northArrowHead} />
-
-            {/* South Counter-weight */}
-            <View style={styles.southCounterWeight} />
-
-            {/* Central Isometric 3D Kaaba */}
-            <View style={styles.kaabaCenter}>
-              <IsometricKaaba size={64} />
-            </View>
-          </View>
+        {/* Center Grounded Isometric 3D Kaaba (Always Upright) */}
+        <View
+          style={[
+            styles.kaabaCenter,
+            {
+              left: center - kaabaSize / 2,
+              top: center - kaabaSize / 2,
+              width: kaabaSize,
+              height: kaabaSize,
+            },
+          ]}
+          pointerEvents="none"
+        >
+          <View
+            style={[
+              styles.kaabaShadow,
+              {
+                width: kaabaSize * 0.72,
+                height: kaabaSize * 0.22,
+                borderRadius: kaabaSize * 0.11,
+              },
+            ]}
+          />
+          <IsometricKaaba size={kaabaSize} />
         </View>
       </View>
     </View>
   );
 }
 
-const DIAL_SIZE = 250;
-
 const styles = StyleSheet.create({
   outerContainer: {
-    width: DIAL_SIZE,
-    height: DIAL_SIZE,
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
-    marginVertical: 14,
   },
   bezel: {
-    width: DIAL_SIZE,
-    height: DIAL_SIZE,
-    borderRadius: DIAL_SIZE / 2,
-    backgroundColor: '#EFE8D6',
-    borderWidth: 5,
-    borderColor: '#C3B28E',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#0A2819',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 18,
-    elevation: 4,
-  },
-  bezelAligned: {
-    borderColor: '#D4AF37', // Gold ring when aligned with Kaaba
-    shadowColor: '#0A3B2A',
-    shadowOpacity: 0.35,
-    shadowRadius: 24,
-    elevation: 8,
-  },
-  innerDial: {
-    width: DIAL_SIZE - 20,
-    height: DIAL_SIZE - 20,
-    borderRadius: (DIAL_SIZE - 20) / 2,
-    backgroundColor: '#FAF7EE',
-    borderWidth: 1,
-    borderColor: '#DDD0B5',
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
-    overflow: 'hidden',
+    shadowColor: palette.forestGreen[950],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
   },
-  tickSlot: {
-    position: 'absolute',
-    left: '50%',
-    top: 0,
-    marginLeft: -1,
-    height: '50%',
-    width: 2,
-    transformOrigin: 'bottom',
-    alignItems: 'center',
-  },
-  tickMark: {
-    borderRadius: 0.5,
-  },
-  tickMajor: {
-    width: 2,
-    height: 10,
-    backgroundColor: '#827150',
-  },
-  tickMinor: {
-    width: 1,
-    height: 5,
-    backgroundColor: '#C9BEA7',
-  },
-  cardinalText: {
-    position: 'absolute',
-    fontSize: 11,
-    color: '#827150',
-    letterSpacing: 1,
-  },
-  cardinalN: {
-    top: 10,
-  },
-  cardinalS: {
-    bottom: 10,
-  },
-  cardinalE: {
-    right: 12,
-  },
-  cardinalW: {
-    left: 12,
+  bezelAligned: {
+    shadowColor: palette.forestGreen[800],
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    elevation: 6,
   },
   rotatingAssembly: {
-    ...StyleSheet.absoluteFill,
+    position: 'absolute',
+    top: 0,
+    left: 0,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  emeraldRay: {
+  stationaryChevron: {
     position: 'absolute',
-    top: 14,
-    width: 3.5,
-    height: 100,
-    backgroundColor: '#0A3D2C',
-    borderRadius: 2,
-  },
-  northArrowHead: {
-    position: 'absolute',
-    top: 4,
-    width: 0,
-    height: 0,
-    borderLeftWidth: 7,
-    borderRightWidth: 7,
-    borderBottomWidth: 12,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderBottomColor: '#0A3D2C',
-  },
-  southCounterWeight: {
-    position: 'absolute',
-    bottom: 14,
-    width: 3,
-    height: 18,
-    backgroundColor: '#C9BEA7',
-    borderRadius: 1.5,
-    opacity: 0.8,
+    top: 0,
+    left: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 5,
   },
   kaabaCenter: {
-    zIndex: 20,
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+  },
+  kaabaShadow: {
+    position: 'absolute',
+    bottom: 2,
+    backgroundColor: 'rgba(10, 59, 42, 0.18)',
   },
 });

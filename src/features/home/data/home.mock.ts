@@ -2,8 +2,8 @@ import { HomeDashboardData } from '../types/home.types';
 import {
   SHARED_PRAYER_SCHEDULE,
   SHARED_PRAYER_TIMES_DATA,
-  deriveNextPrayerFromSchedule,
-} from '../../prayer-times/data/prayer-times.mock';
+} from '@/features/prayer-times/data/prayer-times.mock';
+import { deriveNextPrayerFromSchedule } from '@/utils/prayer-schedule';
 
 const initialDerived = deriveNextPrayerFromSchedule(SHARED_PRAYER_SCHEDULE);
 

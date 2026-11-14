@@ -7,6 +7,7 @@ import {
   formatCoordinates,
   getDirectionLabel,
   isQiblaAligned,
+  normalizeAngle,
 } from '../utils/qibla-geometry';
 import {
   cancelActiveHapticSequence,
@@ -55,20 +56,28 @@ export function useQiblaCompass() {
     startWatchingHeading();
   }, [sharedLocation, startWatchingHeading, stopWatchingHeading]);
 
-  // Derive needle angle and alignment dynamically from current bearing and heading
+  // Derive dial face rotation, needle angle, and alignment dynamically
+  // Dial face rotates counter to device heading to keep cardinal directions locked to the physical horizon
+  const dialAngle =
+    headingState.isLiveCompass && headingState.deviceHeading !== null
+      ? normalizeAngle(-headingState.deviceHeading)
+      : 0;
+
   const needleAngle =
     headingState.isLiveCompass && headingState.deviceHeading !== null
       ? Math.round(calculateNeedleAngle(qiblaBearing, headingState.deviceHeading))
       : qiblaBearing;
 
+  // CRITICAL AUDIT FIX: Must have valid live coordinates before claiming alignment or vibrating
   const isAligned =
-    headingState.isLiveCompass && headingState.deviceHeading !== null
+    isLive && headingState.isLiveCompass && headingState.deviceHeading !== null
       ? isQiblaAligned(qiblaBearing, headingState.deviceHeading)
       : false;
 
   // Evaluate alignment transition for haptic feedback
   useEffect(() => {
-    if (!headingState.isLiveCompass || headingState.deviceHeading === null) {
+    // Suppress haptics if location is not live, or compass is not active, or heading is null
+    if (!isLive || !headingState.isLiveCompass || headingState.deviceHeading === null) {
       wasAlignedRef.current = false;
       hasEstablishedBaselineRef.current = false;
       cancelActiveHapticSequence();
@@ -104,7 +113,7 @@ export function useQiblaCompass() {
     return () => {
       cancelActiveHapticSequence();
     };
-  }, [isAligned, hapticsEnabled, headingState.isLiveCompass, headingState.deviceHeading]);
+  }, [isAligned, isLive, hapticsEnabled, headingState.isLiveCompass, headingState.deviceHeading]);
 
   const toggleHaptics = useCallback(() => {
     setHapticsEnabled((prev) => !prev);
@@ -133,9 +142,11 @@ export function useQiblaCompass() {
     distanceKm,
     deviceHeading: headingState.deviceHeading,
     needleAngle,
+    dialAngle,
     isAligned,
     accuracy: headingState.accuracy,
     isLiveCompass: headingState.isLiveCompass,
+    isTrueNorth: headingState.isTrueNorth,
     isUsingFallback: !isLive,
     canAskAgain: sharedLocation.canAskAgain,
     statusMessage: sharedLocation.statusMessage,

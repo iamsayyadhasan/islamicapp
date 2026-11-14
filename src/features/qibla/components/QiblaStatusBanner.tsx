@@ -49,19 +49,25 @@ export function QiblaStatusBanner({
         </View>
       )}
 
-      {!isLiveCompass && (
-        <View style={styles.staticNoticeBadge}>
-          <ThemedText style={styles.staticNoticeText}>
-            {status === 'permission_denied'
-              ? canAskAgain
-                ? 'Sample Location • Tap below to enable GPS'
-                : 'Sample Location • Enable in System Settings'
-              : status === 'sensor_unavailable'
-                ? 'Static Bearing • Compass sensor unavailable'
-                : 'Locating current coordinates...'}
-          </ThemedText>
-        </View>
-      )}
+      {(!isLiveCompass ||
+        status === 'permission_denied' ||
+        status === 'location_unavailable' ||
+        status === 'locating') &&
+        !isAligned && (
+          <View style={styles.staticNoticeBadge}>
+            <ThemedText style={styles.staticNoticeText}>
+              {status === 'permission_denied'
+                ? canAskAgain
+                  ? 'Sample Location • Tap below to enable GPS'
+                  : 'Sample Location • Enable in System Settings'
+                : status === 'sensor_unavailable'
+                  ? 'Static Bearing • Compass sensor unavailable'
+                  : status === 'location_unavailable'
+                    ? 'Location Unavailable • Live GPS required'
+                    : 'Locating current coordinates...'}
+            </ThemedText>
+          </View>
+        )}
 
       {/* Compass Calibration Hint if Low Accuracy */}
       {(accuracy === 'low' || accuracy === 'uncalibrated') && isLiveCompass && (

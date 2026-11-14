@@ -1,7 +1,11 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AppState, Linking } from 'react-native';
 import * as Location from 'expo-location';
-import { formatCoordinates, formatLocationAddress } from '@/utils/location-formatter';
+import {
+  formatCoordinates,
+  formatLocationAddress,
+  isValidCoordinate,
+} from '@/utils/location-formatter';
 import { logLocationDevBoundary } from '@/utils/location-dev-logger';
 import type {
   LocationCoords,
@@ -27,42 +31,52 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [rawAddress, setRawAddress] = useState<Location.LocationGeocodedAddress | null>(null);
 
-  /**
-   * Acquires GPS coordinates and reverse-geocodes into a human-readable address.
-   */
+  const resetToFallback = useCallback((newStatus: SharedLocationStatus, msg: string | null) => {
+    setStatus(newStatus);
+    setCoords(null);
+    setAccuracy(null);
+    setLocationLabel(DEFAULT_SAMPLE_LOCATION);
+    setIsLiveLocation(false);
+    setStatusMessage(msg);
+  }, []);
+
+  // Acquires GPS coordinates and reverse-geocodes into a human-readable address.
   const resolveLocation = useCallback(async () => {
     if (!isMountedRef.current) return;
 
     try {
       // 1. Passive check of current permission
       let permResponse = await Location.getForegroundPermissionsAsync();
-
-      // If undetermined and allowed, request once
       if (permResponse.status !== Location.PermissionStatus.GRANTED && permResponse.canAskAgain) {
         permResponse = await Location.requestForegroundPermissionsAsync();
       }
-
       setCanAskAgain(permResponse.canAskAgain);
-
       if (permResponse.status !== Location.PermissionStatus.GRANTED) {
         if (!isMountedRef.current) return;
-
         logLocationDevBoundary({
           permissionStatus: permResponse.status,
           canAskAgain: permResponse.canAskAgain,
           fixSource: 'fallback_denied',
         });
-
-        setStatus('permission_denied');
-        setCoords(null);
-        setAccuracy(null);
-        setLocationLabel(DEFAULT_SAMPLE_LOCATION);
-        setIsLiveLocation(false);
-        setStatusMessage('Location permission is needed for your exact location.');
+        resetToFallback(
+          'permission_denied',
+          'Location permission is needed for your exact location.',
+        );
         return;
       }
 
-      // 2. Obtain device location fix
+      // 2. Verify device location services (GPS hardware switch)
+      const servicesEnabled = await Location.hasServicesEnabledAsync();
+      if (!servicesEnabled) {
+        if (!isMountedRef.current) return;
+        resetToFallback(
+          'location_unavailable',
+          'Location services are disabled on your device. Please enable GPS.',
+        );
+        return;
+      }
+
+      // 3. Obtain device location fix
       let fixSource: 'current' | 'last_known' = 'current';
       let position: Location.LocationObject | null = null;
 
@@ -81,7 +95,12 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
 
       const { latitude, longitude, accuracy: posAccuracy } = position.coords;
 
-      // 3. Reverse geocode to resolve locality/sector, city, region, country
+      // Coordinate boundary and validity assertion
+      if (!isValidCoordinate(latitude, longitude)) {
+        throw new Error('Invalid GPS coordinates received from device.');
+      }
+
+      // 4. Reverse geocode to resolve locality/sector, city, region, country
       let geocodeAddress: Location.LocationGeocodedAddress | null = null;
       let formatted = '';
 
@@ -104,11 +123,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
         permissionStatus: permResponse.status,
         canAskAgain: permResponse.canAskAgain,
         fixSource,
-        coords: {
-          latitude,
-          longitude,
-          accuracy: posAccuracy,
-        },
+        coords: { latitude, longitude, accuracy: posAccuracy },
         timestamp: position.timestamp,
         formattedLocation: formatted,
         rawAddress: geocodeAddress,
@@ -132,15 +147,9 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
         canAskAgain: false,
         fixSource: 'fallback_error',
       });
-
-      setStatus('location_unavailable');
-      setCoords(null);
-      setAccuracy(null);
-      setLocationLabel(DEFAULT_SAMPLE_LOCATION);
-      setIsLiveLocation(false);
-      setStatusMessage(msg);
+      resetToFallback('location_unavailable', msg);
     }
-  }, []);
+  }, [resetToFallback]);
 
   const requestPermission = useCallback(async () => {
     try {
@@ -158,10 +167,8 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   const openSettings = useCallback(async () => {
     try {
       await Linking.openSettings();
-    } catch (err) {
-      if (__DEV__) {
-        console.warn('[LocationContext] Could not open device settings:', err);
-      }
+    } catch {
+      // Ignored if settings cannot be opened
     }
   }, []);
 
@@ -177,11 +184,17 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
         try {
           const perm = await Location.getForegroundPermissionsAsync();
           setCanAskAgain(perm.canAskAgain);
-          if (perm.status === Location.PermissionStatus.GRANTED && !isLiveLocation) {
-            setStatus('locating');
-            setTimeout(() => {
-              void resolveLocation();
-            }, 0);
+          if (perm.status === Location.PermissionStatus.GRANTED) {
+            // Re-resolve if location was not active, or passively verify services
+            if (!isLiveLocation) {
+              setStatus('locating');
+              setTimeout(() => {
+                void resolveLocation();
+              }, 0);
+            }
+          } else if (isLiveLocation) {
+            // Permission was revoked in settings while backgrounded
+            void resolveLocation();
           }
         } catch {
           // Passive check ignored

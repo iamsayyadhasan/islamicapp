@@ -168,3 +168,19 @@ export function formatCoordinates(lat: number, lng: number): string {
   const lngDir = lng >= 0 ? 'E' : 'W';
   return `${Math.abs(lat).toFixed(4)}° ${latDir}, ${Math.abs(lng).toFixed(4)}° ${lngDir}`;
 }
+
+/**
+ * Validates whether latitude and longitude are valid decimal coordinates.
+ */
+export function isValidCoordinate(latitude: unknown, longitude: unknown): boolean {
+  return (
+    typeof latitude === 'number' &&
+    typeof longitude === 'number' &&
+    !isNaN(latitude) &&
+    !isNaN(longitude) &&
+    latitude >= -90 &&
+    latitude <= 90 &&
+    longitude >= -180 &&
+    longitude <= 180
+  );
+}

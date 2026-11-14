@@ -15,4 +15,3 @@ export interface FeatureUnderReviewProps {
   scholarlyNote: string;
   etaLabel?: string;
 }
-

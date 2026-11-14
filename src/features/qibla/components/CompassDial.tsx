@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import Svg, { Polyline } from 'react-native-svg';
 import { IsometricKaaba } from '@/components/illustrations';
 import { palette } from '@/theme/tokens/colors';
 import { CompassDialFace } from './CompassDialFace';
@@ -7,11 +8,17 @@ import { CompassNeedle } from './CompassNeedle';
 
 export interface CompassDialProps {
   heading?: number;
+  dialHeading?: number;
   isAligned?: boolean;
   size?: number;
 }
 
-export function CompassDial({ heading = 0, isAligned = false, size }: CompassDialProps) {
+export function CompassDial({
+  heading = 0,
+  dialHeading = 0,
+  isAligned = false,
+  size,
+}: CompassDialProps) {
   const { width } = useWindowDimensions();
   const defaultSize = Math.min(Math.round(width - 48), 336);
   const dialSize = size ?? defaultSize;
@@ -32,15 +39,50 @@ export function CompassDial({ heading = 0, isAligned = false, size }: CompassDia
           isAligned && styles.bezelAligned,
         ]}
       >
-        {/* Static Base Dial Face */}
-        <CompassDialFace
-          dialSize={dialSize}
-          center={center}
-          radius={radius}
-          isAligned={isAligned}
-        />
+        {/* Rotating Dial Face (Disc, Ticks, Rose, Cardinal N/E/S/W locked to physical horizon) */}
+        <View
+          style={[
+            styles.rotatingAssembly,
+            {
+              width: dialSize,
+              height: dialSize,
+              transform: [{ rotate: `${dialHeading}deg` }],
+            },
+          ]}
+          pointerEvents="none"
+        >
+          <CompassDialFace
+            dialSize={dialSize}
+            center={center}
+            radius={radius}
+            isAligned={isAligned}
+          />
+        </View>
 
-        {/* Rotating Needle Assembly */}
+        {/* Stationary Top Direction Indicator (Fixed V-notch Chevron at 12 o'clock / device heading) */}
+        <View
+          style={[
+            styles.stationaryChevron,
+            {
+              width: dialSize,
+              height: dialSize,
+            },
+          ]}
+          pointerEvents="none"
+        >
+          <Svg width={dialSize} height={dialSize} viewBox={`0 0 ${dialSize} ${dialSize}`}>
+            <Polyline
+              points={`${center - 8},${radius * 0.025} ${center},${radius * 0.08} ${center + 8},${radius * 0.025}`}
+              stroke={isAligned ? palette.gold[500] : palette.cream[800]}
+              strokeWidth={2.2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            />
+          </Svg>
+        </View>
+
+        {/* Rotating Needle Assembly (Points to Qibla relative to device heading) */}
         <CompassNeedle
           dialSize={dialSize}
           center={center}
@@ -100,6 +142,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.22,
     shadowRadius: 18,
     elevation: 6,
+  },
+  rotatingAssembly: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stationaryChevron: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 5,
   },
   kaabaCenter: {
     position: 'absolute',

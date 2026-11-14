@@ -18,6 +18,7 @@ export function QiblaScreen() {
     qiblaBearing,
     directionLabel,
     needleAngle,
+    dialAngle,
     isAligned,
     accuracy,
     isLiveCompass,
@@ -61,7 +62,7 @@ export function QiblaScreen() {
 
         {/* Main UI Focus: Large Circular Compass Dial */}
         <View style={styles.compassWrapper}>
-          <CompassDial heading={needleAngle} isAligned={isAligned} />
+          <CompassDial heading={needleAngle} dialHeading={dialAngle} isAligned={isAligned} />
         </View>
 
         {/* Bottom Rounded Location Card */}

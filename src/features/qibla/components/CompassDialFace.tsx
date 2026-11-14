@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import Svg, { Circle, G, Line, Polygon, Polyline, Text as SvgText } from 'react-native-svg';
+import Svg, { Circle, G, Line, Polygon, Text as SvgText } from 'react-native-svg';
 import { palette } from '@/theme/tokens/colors';
 
 export interface CompassDialFaceProps {
@@ -184,16 +184,6 @@ export function CompassDialFace({ dialSize, center, radius, isAligned }: Compass
       >
         W
       </SvgText>
-
-      {/* Top Direction Indicator (V-notch Chevron at 0°) */}
-      <Polyline
-        points={`${center - 8},${radius * 0.025} ${center},${radius * 0.08} ${center + 8},${radius * 0.025}`}
-        stroke={isAligned ? palette.gold[500] : palette.cream[800]}
-        strokeWidth={2.2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
     </Svg>
   );
 }
